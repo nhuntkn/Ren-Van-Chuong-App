@@ -1,0 +1,15 @@
+import { createClient } from "@supabase/supabase-js";
+
+if (typeof globalThis.WebSocket === "undefined") {
+    const { default: WebSocketImpl } = await import("ws");
+    globalThis.WebSocket = WebSocketImpl;
+}
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Thiếu NEXT_PUBLIC_SUPABASE_URL hoặc NEXT_PUBLIC_SUPABASE_ANON_KEY trong .env.local");
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
