@@ -1,14 +1,17 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import jsQR from "jsqr";
 
 export default function QrScannerView({ onScan }) {
     const videoRef = useRef(null);
+    const canvasRef = useRef(null);
     const [error, setError] = useState("");
     const [manualCode, setManualCode] = useState("");
 
     useEffect(() => {
         let stream;
-        let animationId;
+        let rafId;
+        let stopped = false;
 
         async function startCamera() {
             try {
@@ -16,22 +19,40 @@ export default function QrScannerView({ onScan }) {
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
                     await videoRef.current.play();
+                    tick();
                 }
-                // Lưu ý: việc giải mã QR thực tế cần thư viện chuyên dụng
-                // (ví dụ jsQR hoặc html5-qrcode) chạy trên từng khung hình video.
-                // Phần đó sẽ thêm khi viết scan-qr.logic.js ở Bước 6.
             } catch (err) {
                 setError("Không thể truy cập camera. Kiểm tra quyền camera của trình duyệt.");
             }
         }
 
-        startCamera();
+        function tick() {
+            if (stopped) return;
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            if (video && canvas && video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                if (code?.data) {
+                    const match = code.data.match(/\/vat-chua\/([\w-]+)/);
+                    onScan(match ? match[1] : code.data);
+                    return; // dừng quét sau khi tìm thấy
+                }
+            }
+            rafId = requestAnimationFrame(tick);
+        }
 
+        startCamera();
         return () => {
+            stopped = true;
+            if (rafId) cancelAnimationFrame(rafId);
             if (stream) stream.getTracks().forEach((track) => track.stop());
-            if (animationId) cancelAnimationFrame(animationId);
         };
-    }, []);
+    }, [onScan]);
 
     function handleManualSubmit(e) {
         e.preventDefault();
@@ -42,6 +63,7 @@ export default function QrScannerView({ onScan }) {
         <div>
             <div className="aspect-[4/3] bg-black rounded-lg overflow-hidden relative">
                 <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
+                <canvas ref={canvasRef} className="hidden" />
                 {error && (
                     <div className="absolute inset-0 flex items-center justify-center text-white text-[13px] text-center px-4">
                         {error}
