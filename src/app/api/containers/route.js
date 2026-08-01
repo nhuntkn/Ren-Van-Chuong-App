@@ -1,21 +1,32 @@
-import { supabase } from "@/lib/supabaseClient";
 import { supabaseServer } from "@/lib/supabaseServerClient";
 import { generateContainerId, generateQrDataUrl } from "@/lib/qr";
 
 export async function GET() {
-    const { data, error } = await supabase
+    const { data: containersData, error: containersError } = await supabaseServer
         .from("containers")
-        .select("*, container_items(item_id)")
+        .select("*")
         .order("created_at", { ascending: false });
 
-    if (error) return Response.json({ error: error.message }, { status: 500 });
+    if (containersError) return Response.json({ error: containersError.message }, { status: 500 });
 
-    const containers = data.map((c) => ({
+    const { data: linksData, error: linksError } = await supabaseServer
+        .from("container_items")
+        .select("container_id");
+
+    if (linksError) return Response.json({ error: linksError.message }, { status: 500 });
+
+    const countMap = {};
+    for (const link of linksData || []) {
+        countMap[link.container_id] = (countMap[link.container_id] || 0) + 1;
+    }
+
+    const containers = containersData.map((c) => ({
         id: c.id,
         type: c.type,
         zone: c.zone,
         shelf: c.shelf,
-        itemCount: c.container_items?.length || 0,
+        bin: c.bin,
+        itemCount: countMap[c.id] || 0,
     }));
 
     return Response.json(containers);
@@ -23,13 +34,13 @@ export async function GET() {
 
 export async function POST(request) {
     const body = await request.json();
-    const { type, zone, shelf } = body;
+    const { type, zone, shelf, bin } = body;
 
     const id = generateContainerId();
 
     const { error } = await supabaseServer
         .from("containers")
-        .insert({ id, type: type || "single", zone, shelf });
+        .insert({ id, type: type || "single", zone, shelf, bin });
 
     if (error) return Response.json({ error: error.message }, { status: 500 });
 

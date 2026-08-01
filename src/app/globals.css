@@ -46,3 +46,19 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
 }
+
+@media print {
+  body * {
+    display: none !important;
+  }
+  .print-area,
+  .print-area * {
+    display: revert !important;
+  }
+  .print-area {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}

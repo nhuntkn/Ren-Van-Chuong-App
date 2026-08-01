@@ -13,6 +13,10 @@ export function useItemDetailLogic() {
     const [priceInput, setPriceInput] = useState("");
     const [publishLoading, setPublishLoading] = useState(false);
 
+    const [isEditingNote, setIsEditingNote] = useState(false);
+    const [noteInput, setNoteInput] = useState("");
+    const [savingNote, setSavingNote] = useState(false);
+
     const load = useCallback(async () => {
         setLoading(true);
         try {
@@ -24,7 +28,13 @@ export function useItemDetailLogic() {
             if (!itemRes.ok) throw new Error(itemData.error || "Không tìm thấy mẫu.");
             setItem(itemData);
             setPriceInput(itemData.price || "");
-            setContainers(await containersRes.json());
+            setNoteInput(itemData.note || "");
+
+            const containersData = await containersRes.json();
+            setContainers(Array.isArray(containersData) ? containersData : []);
+            if (!containersRes.ok) {
+                console.error("Lỗi tải breakdown bao hàng:", containersData.error);
+            }
         } catch (err) {
             setError(err.message);
         } finally {
@@ -35,6 +45,36 @@ export function useItemDetailLogic() {
     useEffect(() => {
         load();
     }, [load]);
+
+    function startEditNote() {
+        setNoteInput(item.note || "");
+        setIsEditingNote(true);
+    }
+
+    function cancelEditNote() {
+        setIsEditingNote(false);
+        setNoteInput(item.note || "");
+    }
+
+    async function saveNote() {
+        setSavingNote(true);
+        setError("");
+        try {
+            const res = await fetch(`/api/items/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ note: noteInput.trim() }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Lưu ghi chú thất bại.");
+            setIsEditingNote(false);
+            await load();
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setSavingNote(false);
+        }
+    }
 
     async function togglePublish() {
         const nextState = !item.isPublished;
@@ -71,5 +111,10 @@ export function useItemDetailLogic() {
         }
     }
 
-    return { item, containers, loading, error, priceInput, setPriceInput, togglePublish, publishLoading, deleteItem };
+    return {
+        item, containers, loading, error,
+        priceInput, setPriceInput, togglePublish, publishLoading,
+        deleteItem,
+        isEditingNote, noteInput, setNoteInput, startEditNote, cancelEditNote, saveNote, savingNote,
+    };
 }

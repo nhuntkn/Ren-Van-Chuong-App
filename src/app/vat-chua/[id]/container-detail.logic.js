@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 export function useContainerDetailLogic() {
     const { id } = useParams();
+    const router = useRouter();
     const [container, setContainer] = useState(null);
     const [items, setItems] = useState([]);
     const [allItems, setAllItems] = useState([]);
@@ -64,5 +65,18 @@ export function useContainerDetailLogic() {
         }
     }
 
-    return { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer };
+    async function deleteContainer() {
+        setError("");
+        try {
+            const res = await fetch(`/api/containers/${id}`, { method: "DELETE" });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Xóa bao thất bại.");
+            router.push("/vat-chua");
+        } catch (err) {
+            setError(err.message);
+        }
+    }
+
+    return { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer };
 }
+

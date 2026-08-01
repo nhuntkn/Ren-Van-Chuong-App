@@ -1,28 +1,41 @@
-import { supabase } from "@/lib/supabaseClient";
 import { supabaseServer } from "@/lib/supabaseServerClient";
 
 export async function GET(request, { params }) {
     const { id } = await params;
 
-    const { data, error } = await supabase
+    const { data: links, error: linksError } = await supabaseServer
         .from("container_items")
-        .select("qty, items(id, name, unit, image_url)")
+        .select("item_id, qty")
         .eq("container_id", id);
 
-    if (error) return Response.json({ error: error.message }, { status: 500 });
+    if (linksError) return Response.json({ error: linksError.message }, { status: 500 });
+    if (!links || links.length === 0) return Response.json([]);
 
-    const items = data.map((row) => ({
-        itemId: row.items.id,
-        name: row.items.name,
-        unit: row.items.unit,
-        imageUrl: row.items.image_url,
-        qty: row.qty,
-    }));
+    const itemIds = links.map((l) => l.item_id);
+    const { data: itemsData, error: itemsError } = await supabaseServer
+        .from("items")
+        .select("id, item_code, name, unit, image_url")
+        .in("id", itemIds);
 
-    return Response.json(items);
+    if (itemsError) return Response.json({ error: itemsError.message }, { status: 500 });
+
+    const itemMap = Object.fromEntries(itemsData.map((it) => [it.id, it]));
+
+    const result = links.map((link) => {
+        const it = itemMap[link.item_id] || {};
+        return {
+            itemId: link.item_id,
+            itemCode: it.item_code,
+            name: it.name,
+            unit: it.unit,
+            imageUrl: it.image_url,
+            qty: link.qty,
+        };
+    });
+
+    return Response.json(result);
 }
 
-// Thêm mẫu vào bao (cộng dồn nếu mẫu đó đã có sẵn trong bao)
 export async function POST(request, { params }) {
     const { id: containerId } = await params;
     const body = await request.json();
@@ -55,7 +68,6 @@ export async function POST(request, { params }) {
     return Response.json({ success: true });
 }
 
-// Lấy bớt/lấy hết mẫu ra khỏi bao
 export async function PATCH(request, { params }) {
     const { id: containerId } = await params;
     const body = await request.json();

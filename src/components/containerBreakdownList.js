@@ -1,7 +1,8 @@
+import Link from "next/link";
 import LocationPill from "./locationPill";
 
 export default function ContainerBreakdownList({ containers }) {
-    if (!containers || containers.length === 0) {
+    if (!Array.isArray(containers) || containers.length === 0) {
         return (
             <p className="text-[13px] text-ink-soft text-center py-6">
                 Mẫu này chưa được gán vào bao nào.
@@ -12,8 +13,9 @@ export default function ContainerBreakdownList({ containers }) {
     return (
         <div className="flex flex-col gap-2">
             {containers.map((c) => (
-                <div
+                <Link
                     key={c.containerId}
+                    href={`/vat-chua/${c.containerId}`}
                     className={`flex justify-between items-center border rounded-lg px-3 py-2.5 ${
                         c.type === "mixed" ? "border-accent bg-accent-soft/40" : "border-border"
                     }`}
@@ -25,7 +27,7 @@ export default function ContainerBreakdownList({ containers }) {
                         </div>
                     </div>
                     <span className="text-[14px] font-semibold">{c.qty}</span>
-                </div>
+                </Link>
             ))}
         </div>
     );

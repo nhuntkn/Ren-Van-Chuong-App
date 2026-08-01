@@ -25,10 +25,10 @@ export default function ItemCard({ item }) {
             </div>
 
             <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-semibold truncate">{item.name}</p>
+                <p className="text-[14px] font-semibold truncate">{item.itemCode}</p>
                 <p className="text-[11px] text-ink-soft mt-0.5">
-                    {item.category}
-                    {item.colorName && ` · ${item.colorName} (${item.colorCode})`}
+                    {item.itemCode}
+                    {item.color && ` · ${item.color}`}
                 </p>
                 <span className={`inline-block text-[11px] mt-1.5 px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>
                     {statusLabel}

@@ -4,7 +4,7 @@ import PhotoCapture from "@/components/photoCapture";
 import { CATEGORIES, UNITS } from "@/lib/constants";
 
 export default function AddItemPage() {
-    const { colors, form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error } =
+    const { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error } =
         useAddItemLogic();
 
     return (
@@ -15,46 +15,36 @@ export default function AddItemPage() {
                 <PhotoCapture previewUrl={previewUrl} onCapture={handlePhotoCapture} />
 
                 <div>
-                    <label className="text-[12px] text-ink-soft block mb-1">Tên mẫu</label>
+                    <label className="text-[12px] text-ink-soft block mb-1">Mã mẫu</label>
                     <input
                         type="text"
-                        value={form.name}
-                        onChange={(e) => updateField("name", e.target.value)}
-                        placeholder="VD: Ren hoa mẫu đơn"
-                        className="w-full px-3 py-2 border border-border rounded-md text-sm"
+                        value={form.itemCode}
+                        onChange={(e) => updateField("itemCode", e.target.value)}
+                        placeholder="VD: CHX - mẫu 09"
+                        className="w-full px-3 py-2 border border-border rounded-md text-sm font-mono"
                     />
+                    <p className="text-[11px] text-ink-faint mt-1">Tự động gợi ý theo loại, có thể sửa lại.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                     <div>
                         <label className="text-[12px] text-ink-soft block mb-1">Loại</label>
-                        <select
-                            value={form.category}
-                            onChange={(e) => updateField("category", e.target.value)}
-                            className="w-full px-3 py-2 border border-border rounded-md text-sm"
-                        >
+                        <select value={form.category} onChange={(e) => updateField("category", e.target.value)} className="w-full px-3 py-2 border border-border rounded-md text-sm">
                             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="text-[12px] text-ink-soft block mb-1">Mã màu</label>
-                        <select
-                            value={form.colorCode}
-                            onChange={(e) => updateField("colorCode", e.target.value)}
-                            className="w-full px-3 py-2 border border-border rounded-md text-sm"
-                        >
-                            {colors.map((c) => (
-                                <option key={c.code} value={c.code}>{c.code} · {c.name}</option>
-                            ))}
-                        </select>
+                        <label className="text-[12px] text-ink-soft block mb-1">Màu sắc</label>
+                        <input type="text" value={form.color} onChange={(e) => updateField("color", e.target.value)} placeholder="VD: Trắng, be, hồng gạch..." className="w-full px-3 py-2 border border-border rounded-md text-sm" />
                     </div>
                 </div>
 
                 <div>
                     <label className="text-[12px] text-ink-soft block mb-1">Vị trí bao đầu tiên</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                         <input placeholder="Khu vực" value={form.zone} onChange={(e) => updateField("zone", e.target.value)} className="px-3 py-2 border border-border rounded-md text-sm" />
-                        <input placeholder="Kệ số" value={form.shelf} onChange={(e) => updateField("shelf", e.target.value)} className="px-3 py-2 border border-border rounded-md text-sm" />                    </div>
+                        <input placeholder="Kệ số" value={form.shelf} onChange={(e) => updateField("shelf", e.target.value)} className="px-3 py-2 border border-border rounded-md text-sm" />
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">

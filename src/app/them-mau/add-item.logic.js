@@ -2,19 +2,19 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { fileToImage, resizeToDataURL, computeHashAndColor } from "@/lib/imageHash";
-import { CATEGORIES, UNITS } from "@/lib/constants";
+import { CATEGORIES, UNITS, CATEGORY_CODE_PREFIXES } from "@/lib/constants";
 
 export function useAddItemLogic() {
     const router = useRouter();
-    const [colors, setColors] = useState([]);
     const [photoFile, setPhotoFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [feature, setFeature] = useState(null);
+    const [codeTouched, setCodeTouched] = useState(false);
 
     const [form, setForm] = useState({
-        name: "",
+        itemCode: "",
         category: CATEGORIES[0],
-        colorCode: "",
+        color: "",
         unit: UNITS[0],
         note: "",
         zone: "",
@@ -25,17 +25,23 @@ export function useAddItemLogic() {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        fetch("/api/colors")
+        if (codeTouched) return;
+        const prefix = CATEGORY_CODE_PREFIXES[form.category] || "";
+        if (!prefix) return;
+
+        fetch(`/api/items/next-code?prefix=${encodeURIComponent(prefix)}`)
             .then((res) => res.json())
             .then((data) => {
-                setColors(Array.isArray(data) ? data : []);
-                if (data?.[0]) updateField("colorCode", data[0].code);
+                if (data.suggestedCode) {
+                    setForm((prev) => ({ ...prev, itemCode: data.suggestedCode }));
+                }
             })
-            .catch(() => setColors([]));
-    }, []);
+            .catch(() => {});
+    }, [form.category, codeTouched]);
 
     function updateField(field, value) {
         setForm((prev) => ({ ...prev, [field]: value }));
+        if (field === "itemCode") setCodeTouched(true);
     }
 
     async function handlePhotoCapture(file) {
@@ -49,40 +55,35 @@ export function useAddItemLogic() {
         e.preventDefault();
         setError("");
 
-        if (!form.name.trim()) {
-            setError("Vui lòng nhập tên mẫu.");
-            return;
-        }
-        if (!photoFile) {
-            setError("Vui lòng chụp ảnh mẫu.");
-            return;
-        }
-        if (!form.qty || Number(form.qty) <= 0) {
-            setError("Vui lòng nhập số lượng hợp lệ cho bao đầu tiên.");
-            return;
-        }
+        if (!form.itemCode.trim()) { setError("Vui lòng nhập mã mẫu."); return; }
+        if (!photoFile) { setError("Vui lòng chụp ảnh mẫu."); return; }
+        if (!form.qty || Number(form.qty) <= 0) { setError("Vui lòng nhập số lượng hợp lệ cho bao đầu tiên."); return; }
 
         setSubmitting(true);
         try {
-            // 1. Tạo mẫu hàng
             const itemRes = await fetch("/api/items", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    name: form.name.trim(),
+                    itemCode: form.itemCode.trim(),
                     category: form.category,
-                    colorCode: form.colorCode || null,
+                    color: form.color.trim(),
                     unit: form.unit,
                     note: form.note.trim(),
-                    imageUrl: previewUrl, // MVP: lưu thẳng base64, nâng cấp lên Supabase Storage sau
+                    imageUrl: previewUrl,
                     hash: feature.hash,
                     avgColor: feature.avgColor,
                 }),
             });
             const itemData = await itemRes.json();
-            if (!itemRes.ok) throw new Error(itemData.error || "Tạo mẫu hàng thất bại.");
 
-            // 2. Tạo bao đầu tiên
+            if (!itemRes.ok) {
+                if (itemRes.status === 409) {
+                    throw new Error(`Mã mẫu "${form.itemCode}" đã tồn tại, vui lòng đặt mã khác.`);
+                }
+                throw new Error(itemData.error || "Tạo mẫu hàng thất bại.");
+            }
+
             const containerRes = await fetch("/api/containers", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -91,7 +92,6 @@ export function useAddItemLogic() {
             const containerData = await containerRes.json();
             if (!containerRes.ok) throw new Error(containerData.error || "Tạo bao hàng thất bại.");
 
-            // 3. Gán mẫu vào bao vừa tạo
             const linkRes = await fetch(`/api/containers/${containerData.id}/items`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -108,5 +108,5 @@ export function useAddItemLogic() {
         }
     }
 
-    return { colors, form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error };
+    return { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error };
 }
