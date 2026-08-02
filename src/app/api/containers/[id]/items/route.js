@@ -70,6 +70,13 @@ export async function POST(request, { params }) {
 
 export async function PATCH(request, { params }) {
     const { id: containerId } = await params;
+
+    const cookieStore = await cookies();
+    const role = cookieStore.get("kho_role")?.value;
+    if (role !== "admin") {
+        return Response.json({ error: "Chỉ quản lý mới được lấy hàng ra khỏi bao." }, { status: 403 });
+    }
+
     const body = await request.json();
     const { itemId, qtyToRemove } = body;
 
