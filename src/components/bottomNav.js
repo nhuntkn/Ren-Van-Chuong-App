@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { clearRoleCookie } from "@/lib/roleCookie";
 
 const NAV_ITEMS = [
     { href: "/kho-hang", label: "Kho hàng", icon: "list" },
@@ -40,6 +41,17 @@ const ICONS = {
 
 export default function BottomNav() {
     const pathname = usePathname();
+    const router = useRouter();
+
+    if (pathname === "/login") {
+        return null;
+    }
+
+    function handleLogout() {
+        clearRoleCookie();
+        router.push("/login");
+        router.refresh();
+    }
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-border flex max-w-[480px] mx-auto z-10">
@@ -58,6 +70,17 @@ export default function BottomNav() {
                     </Link>
                 );
             })}
+            <button
+                onClick={handleLogout}
+                className="flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[10.5px] text-ink-soft"
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-[20px] h-[20px]">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <path d="M16 17l5-5-5-5" />
+                    <path d="M21 12H9" />
+                </svg>
+                Đổi vai trò
+            </button>
         </nav>
     );
 }
