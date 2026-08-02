@@ -16,6 +16,14 @@ export function useItemDetailLogic() {
     const [isEditingNote, setIsEditingNote] = useState(false);
     const [noteInput, setNoteInput] = useState("");
     const [savingNote, setSavingNote] = useState(false);
+    const [role, setRole] = useState(null);
+
+    useEffect(() => {
+        fetch("/api/me")
+            .then((r) => r.json())
+            .then((data) => setRole(data.role))
+            .catch(() => setRole(null));
+    }, []);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -116,5 +124,6 @@ export function useItemDetailLogic() {
         priceInput, setPriceInput, togglePublish, publishLoading,
         deleteItem,
         isEditingNote, noteInput, setNoteInput, startEditNote, cancelEditNote, saveNote, savingNote,
+        role,
     };
 }

@@ -4,7 +4,7 @@ import { useContainerDetailLogic } from "./container-detail.logic";
 import LocationPill from "@/components/locationPill";
 
 export default function ContainerDetailPage() {
-    const { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer } =
+    const { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer, role } =
         useContainerDetailLogic();
 
     const [selectedItemId, setSelectedItemId] = useState("");
@@ -103,23 +103,25 @@ export default function ContainerDetailPage() {
                             <span className="text-sm font-medium">{it.itemCode || it.name}</span>
                             <span className="text-[13px] text-ink-soft">Hiện có: {it.qty} {it.unit}</span>
                         </div>
-                        <div className="flex gap-2">
-                            <input
-                                type="number"
-                                min="1"
-                                max={it.qty}
-                                placeholder={`Số lượng (tối đa ${it.qty})`}
-                                value={removeQtyMap[it.itemId] || ""}
-                                onChange={(e) => setRemoveQtyMap((prev) => ({ ...prev, [it.itemId]: e.target.value }))}
-                                className="flex-1 px-3 py-1.5 border border-border rounded-md text-sm"
-                            />
-                            <button
-                                onClick={() => handleRemove(it.itemId, it.qty)}
-                                className="text-[12px] text-white bg-red-500 font-medium px-3 rounded-md"
-                            >
-                                Lấy ra
-                            </button>
-                        </div>
+                        {role === "admin" && (
+                            <div className="flex gap-2">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max={it.qty}
+                                    placeholder={`Số lượng (tối đa ${it.qty})`}
+                                    value={removeQtyMap[it.itemId] || ""}
+                                    onChange={(e) => setRemoveQtyMap((prev) => ({ ...prev, [it.itemId]: e.target.value }))}
+                                    className="flex-1 px-3 py-1.5 border border-border rounded-md text-sm"
+                                />
+                                <button
+                                    onClick={() => handleRemove(it.itemId, it.qty)}
+                                    className="text-[12px] text-white bg-red-500 font-medium px-3 rounded-md"
+                                >
+                                    Lấy ra
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ))}
             </div>
@@ -139,10 +141,11 @@ export default function ContainerDetailPage() {
             <button onClick={handlePrintQr} className="w-full mt-3 border border-border rounded-md py-2.5 text-sm">
                 In lại mã QR
             </button>
-
-            <button onClick={handleDelete} className="w-full mt-3 text-red-500 text-sm font-medium py-2">
-                Xóa bao này
-            </button>
+            {role === "admin" && (
+                <button onClick={handleDelete} className="w-full mt-3 text-red-500 text-sm font-medium py-2">
+                    Xóa bao này
+                </button>
+            )}
         </main>
     );
 }

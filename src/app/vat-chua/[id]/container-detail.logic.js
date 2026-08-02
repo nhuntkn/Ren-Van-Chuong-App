@@ -10,6 +10,14 @@ export function useContainerDetailLogic() {
     const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [role, setRole] = useState(null);
+
+    useEffect(() => {
+        fetch("/api/me")
+            .then((r) => r.json())
+            .then((data) => setRole(data.role))
+            .catch(() => setRole(null));
+    }, []);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -77,6 +85,6 @@ export function useContainerDetailLogic() {
         }
     }
 
-    return { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer };
+    return { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer, role };
 }
 

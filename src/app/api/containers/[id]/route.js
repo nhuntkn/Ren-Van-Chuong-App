@@ -34,6 +34,12 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
     const { id } = await params;
 
+    const cookieStore = await cookies();
+    const role = cookieStore.get("kho_role")?.value;
+    if (role !== "admin") {
+        return Response.json({ error: "Chỉ quản lý mới được xóa bao." }, { status: 403 });
+    }
+
     const { data: links, error: linksError } = await supabaseServer
         .from("container_items")
         .select("id")

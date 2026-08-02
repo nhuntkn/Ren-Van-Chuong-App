@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+import { ROLE_COOKIE } from "@/lib/roleCookie";
 import { supabaseServer } from "@/lib/supabaseServerClient";
 
 export async function GET(request, { params }) {
@@ -57,6 +59,13 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
     const { id } = await params;
+
+    const cookieStore = await cookies();
+    const role = cookieStore.get(ROLE_COOKIE)?.value;
+    if (role !== "admin") {
+        return Response.json({ error: "Chỉ quản lý mới được xóa mẫu." }, { status: 403 });
+    }
+
     const { error } = await supabaseServer.from("items").delete().eq("id", id);
     if (error) return Response.json({ error: error.message }, { status: 500 });
     return Response.json({ success: true });
