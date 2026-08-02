@@ -4,7 +4,7 @@ import { useContainerDetailLogic } from "./container-detail.logic";
 import LocationPill from "@/components/locationPill";
 
 export default function ContainerDetailPage() {
-    const { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer } =
+    const { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer, role } =
         useContainerDetailLogic();
 
     const [selectedItemId, setSelectedItemId] = useState("");
@@ -139,10 +139,11 @@ export default function ContainerDetailPage() {
             <button onClick={handlePrintQr} className="w-full mt-3 border border-border rounded-md py-2.5 text-sm">
                 In lại mã QR
             </button>
-
-            <button onClick={handleDelete} className="w-full mt-3 text-red-500 text-sm font-medium py-2">
-                Xóa bao này
-            </button>
+            {role === "admin" && (
+                <button onClick={handleDelete} className="w-full mt-3 text-red-500 text-sm font-medium py-2">
+                    Xóa bao này
+                </button>
+            )}
         </main>
     );
 }

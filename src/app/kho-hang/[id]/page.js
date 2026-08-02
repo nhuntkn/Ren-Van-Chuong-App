@@ -8,6 +8,7 @@ export default function ItemDetailPage() {
         priceInput, setPriceInput, togglePublish, publishLoading,
         deleteItem,
         isEditingNote, noteInput, setNoteInput, startEditNote, cancelEditNote, saveNote, savingNote,
+        role,
     } = useItemDetailLogic();
 
     if (loading) return <main className="px-4 py-5 text-ink-soft text-sm">Đang tải...</main>;
@@ -102,9 +103,11 @@ export default function ItemDetailPage() {
 
             {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
 
-            <button onClick={deleteItem} className="w-full mt-4 text-red-500 text-sm font-medium py-2">
-                Xóa mẫu này
-            </button>
+            {role === "admin" && (
+                <button onClick={deleteItem} className="w-full mt-4 text-red-500 text-sm font-medium py-2">
+                    Xóa mẫu này
+                </button>
+            )}
         </main>
     );
 }
