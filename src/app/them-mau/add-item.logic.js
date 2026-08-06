@@ -49,7 +49,7 @@ export function useAddItemLogic() {
     async function handlePhotoCapture(file) {
         setPhotoFile(file);
         const img = await fileToImage(file);
-        setPreviewUrl(resizeToDataURL(img, 320, 0.65));
+        setPreviewUrl(resizeToDataURL(img, 800, 0.85));
         const newFeature = computeHashAndColor(img);
         setFeature(newFeature);
 

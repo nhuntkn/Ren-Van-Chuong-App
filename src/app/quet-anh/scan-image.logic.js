@@ -14,7 +14,7 @@ export function useScanImageLogic() {
         setLoading(true);
         try {
             const img = await fileToImage(file);
-            setPreviewUrl(resizeToDataURL(img, 320, 0.7));
+            setPreviewUrl(resizeToDataURL(img, 800, 0.85));
             const feature = computeHashAndColor(img);
 
             const res = await fetch("/api/match", {

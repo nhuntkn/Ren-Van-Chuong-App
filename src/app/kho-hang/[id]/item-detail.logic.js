@@ -133,7 +133,7 @@ export function useItemDetailLogic() {
         setError("");
         try {
             const img = await fileToImage(file);
-            const newPreview = resizeToDataURL(img, 320, 0.65);
+            const newPreview = resizeToDataURL(img, 800, 0.85);
             const feature = computeHashAndColor(img);
 
             const res = await fetch(`/api/items/${id}`, {
