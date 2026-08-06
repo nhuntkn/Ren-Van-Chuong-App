@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { fileToImage, resizeToDataURL, computeHashAndColor } from "@/lib/imageHash";
 
 export function useItemDetailLogic() {
     const { id } = useParams();
@@ -20,6 +21,7 @@ export function useItemDetailLogic() {
 
     const [allItems, setAllItems] = useState([]);
     const [showCreateContainer, setShowCreateContainer] = useState(false);
+    const [changingPhoto, setChangingPhoto] = useState(false);
 
     useEffect(() => {
         fetch("/api/items").then((r) => r.json()).then((d) => setAllItems(Array.isArray(d) ? d : [])).catch(() => setAllItems([]));
@@ -126,12 +128,36 @@ export function useItemDetailLogic() {
         }
     }
 
+    async function changePhoto(file) {
+        setChangingPhoto(true);
+        setError("");
+        try {
+            const img = await fileToImage(file);
+            const newPreview = resizeToDataURL(img, 320, 0.65);
+            const feature = computeHashAndColor(img);
+
+            const res = await fetch(`/api/items/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ imageUrl: newPreview, hash: feature.hash, avgColor: feature.avgColor }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Đổi ảnh thất bại.");
+            await load();
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setChangingPhoto(false);
+        }
+    }
+
     return {
-        item, containers, loading, error,
+        item, containers, loading, error, load,
         priceInput, setPriceInput, togglePublish, publishLoading,
         deleteItem,
         isEditingNote, noteInput, setNoteInput, startEditNote, cancelEditNote, saveNote, savingNote,
         role,
         allItems, showCreateContainer, setShowCreateContainer,
+        changingPhoto, changePhoto,
     };
 }

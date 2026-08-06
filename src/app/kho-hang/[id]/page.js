@@ -2,6 +2,8 @@
 import { useItemDetailLogic } from "./item-detail.logic";
 import ContainerBreakdownList from "@/components/containerBreakdownList";
 import CreateContainerForm from "@/components/createContainerForm";
+import PhotoCapture from "@/components/photoCapture";
+
 
 export default function ItemDetailPage() {
     const {
@@ -11,6 +13,7 @@ export default function ItemDetailPage() {
         isEditingNote, noteInput, setNoteInput, startEditNote, cancelEditNote, saveNote, savingNote,
         role,
         allItems, showCreateContainer, setShowCreateContainer,
+        changingPhoto, changePhoto,
     } = useItemDetailLogic();
 
     if (loading) return <main className="px-4 py-5 text-ink-soft text-sm">Đang tải...</main>;
@@ -18,9 +21,19 @@ export default function ItemDetailPage() {
 
     return (
         <main className="px-4 py-5">
-            <div className="w-full aspect-square rounded-lg overflow-hidden bg-surface-alt mb-3">
+            <div className="w-full aspect-square rounded-lg overflow-hidden bg-surface-alt mb-2 relative">
                 {item.imageUrl && <img src={item.imageUrl} alt={item.itemCode} className="w-full h-full object-cover" />}
             </div>
+            <label className="block text-center text-[12px] text-accent-dark font-medium mb-3 cursor-pointer">
+                {changingPhoto ? "Đang cập nhật ảnh..." : "Đổi ảnh khác"}
+                <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && changePhoto(e.target.files[0])}
+                />
+            </label>
 
             <p className="font-mono text-lg font-semibold">{item.itemCode}</p>
             {item.name && <p className="text-[14px] text-ink-soft">{item.name}</p>}
