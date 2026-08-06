@@ -44,11 +44,29 @@ export function useAddItemLogic() {
         if (field === "itemCode") setCodeTouched(true);
     }
 
+    const [duplicateWarning, setDuplicateWarning] = useState(null);
+
     async function handlePhotoCapture(file) {
         setPhotoFile(file);
         const img = await fileToImage(file);
         setPreviewUrl(resizeToDataURL(img, 320, 0.65));
-        setFeature(computeHashAndColor(img));
+        const newFeature = computeHashAndColor(img);
+        setFeature(newFeature);
+
+        setDuplicateWarning(null);
+        try {
+            const res = await fetch("/api/match", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newFeature),
+            });
+            const matches = await res.json();
+            if (Array.isArray(matches) && matches.length > 0 && matches[0].score >= 80) {
+                setDuplicateWarning(matches[0]);
+            }
+        } catch (err) {
+            // im lặng bỏ qua nếu kiểm tra trùng thất bại, không chặn việc thêm mẫu
+        }
     }
 
     async function handleSubmit(e) {
@@ -57,7 +75,16 @@ export function useAddItemLogic() {
 
         if (!form.itemCode.trim()) { setError("Vui lòng nhập mã mẫu."); return; }
         if (!photoFile) { setError("Vui lòng chụp ảnh mẫu."); return; }
-        if (!form.qty || Number(form.qty) <= 0) { setError("Vui lòng nhập số lượng hợp lệ cho bao đầu tiên."); return; }
+
+        const hasZone = form.zone.trim() !== "";
+        const hasShelf = form.shelf.trim() !== "";
+        const hasQty = form.qty !== "" && Number(form.qty) > 0;
+        const anyLocationFieldFilled = hasZone || hasShelf || hasQty;
+
+        if (anyLocationFieldFilled && !(hasZone && hasShelf && hasQty)) {
+            setError("Nếu muốn tạo bao ngay, vui lòng điền đầy đủ khu vực, kệ và số lượng.");
+            return;
+        }
 
         setSubmitting(true);
         try {
@@ -76,29 +103,25 @@ export function useAddItemLogic() {
                 }),
             });
             const itemData = await itemRes.json();
+            if (!itemRes.ok) throw new Error(itemData.error || "Tạo mẫu hàng thất bại.");
 
-            if (!itemRes.ok) {
-                if (itemRes.status === 409) {
-                    throw new Error(`Mã mẫu "${form.itemCode}" đã tồn tại, vui lòng đặt mã khác.`);
-                }
-                throw new Error(itemData.error || "Tạo mẫu hàng thất bại.");
+            if (anyLocationFieldFilled) {
+                const containerRes = await fetch("/api/containers", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ type: "single", zone: form.zone, shelf: form.shelf }),
+                });
+                const containerData = await containerRes.json();
+                if (!containerRes.ok) throw new Error(containerData.error || "Tạo bao hàng thất bại.");
+
+                const linkRes = await fetch(`/api/containers/${containerData.id}/items`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ itemId: itemData.id, qty: Number(form.qty) }),
+                });
+                const linkData = await linkRes.json();
+                if (!linkRes.ok) throw new Error(linkData.error || "Gán mẫu vào bao thất bại.");
             }
-
-            const containerRes = await fetch("/api/containers", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ type: "single", zone: form.zone, shelf: form.shelf }),
-            });
-            const containerData = await containerRes.json();
-            if (!containerRes.ok) throw new Error(containerData.error || "Tạo bao hàng thất bại.");
-
-            const linkRes = await fetch(`/api/containers/${containerData.id}/items`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ itemId: itemData.id, qty: Number(form.qty) }),
-            });
-            const linkData = await linkRes.json();
-            if (!linkRes.ok) throw new Error(linkData.error || "Gán mẫu vào bao thất bại.");
 
             router.push(`/kho-hang/${itemData.id}`);
         } catch (err) {
@@ -108,5 +131,5 @@ export function useAddItemLogic() {
         }
     }
 
-    return { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error };
+    return { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error, duplicateWarning };
 }

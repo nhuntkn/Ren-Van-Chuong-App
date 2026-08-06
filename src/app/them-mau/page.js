@@ -1,11 +1,32 @@
 "use client";
+import { useState, useEffect } from "react";
 import { useAddItemLogic } from "./add-item.logic";
 import PhotoCapture from "@/components/photoCapture";
 import { CATEGORIES, UNITS } from "@/lib/constants";
+import Link from "next/link";
 
 export default function AddItemPage() {
-    const { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error } =
+    const [role, setRole] = useState(null);
+
+    useEffect(() => {
+        fetch("/api/me").then((r) => r.json()).then((d) => setRole(d.role)).catch(() => setRole(null));
+    }, []);
+
+    const { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error, duplicateWarning } =
         useAddItemLogic();
+
+    if (role === null) {
+        return <main className="px-4 py-5 text-ink-soft text-sm">Đang tải...</main>;
+    }
+
+    if (role !== "admin") {
+        return (
+            <main className="px-4 py-10 text-center">
+                <p className="text-ink-soft text-sm mb-3">Chỉ quản lý mới có quyền thêm mẫu hàng mới.</p>
+                <Link href="/kho-hang" className="text-accent-dark text-sm underline">Quay lại Kho hàng</Link>
+            </main>
+        );
+    }
 
     return (
         <main className="px-4 py-5">
@@ -13,6 +34,20 @@ export default function AddItemPage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 <PhotoCapture previewUrl={previewUrl} onCapture={handlePhotoCapture} />
+
+                {duplicateWarning && (
+                <div className="bg-[#FBEFD9] border border-[#E8C97A] rounded-md p-3 text-[12.5px]">
+                    <p className="text-[#9A6A1E] font-medium mb-1">
+                        Có thể mẫu này đã tồn tại ({duplicateWarning.score}% giống)
+                    </p>
+                    <p className="text-[#9A6A1E]">
+                        Mẫu <b>{duplicateWarning.name}</b> trong kho khá giống ảnh vừa chụp.{" "}
+                        <Link href={`/kho-hang/${duplicateWarning.id}`} className="underline">Xem mẫu này</Link>
+                        {" "}hoặc vào{" "}
+                        <Link href="/quet-anh" className="underline">Quét ảnh</Link> để kiểm tra kỹ hơn trước khi tạo mới.
+                    </p>
+                </div>
+            )}
 
                 <div>
                     <label className="text-[12px] text-ink-soft block mb-1">Mã mẫu</label>
@@ -45,6 +80,7 @@ export default function AddItemPage() {
                         <input placeholder="Khu vực" value={form.zone} onChange={(e) => updateField("zone", e.target.value)} className="px-3 py-2 border border-border rounded-md text-sm" />
                         <input placeholder="Kệ số" value={form.shelf} onChange={(e) => updateField("shelf", e.target.value)} className="px-3 py-2 border border-border rounded-md text-sm" />
                     </div>
+                    <p className="text-[11px] text-ink-faint mt-1">Để trống nếu chưa muốn tạo bao ngay — có thể gán bao sau ở trang chi tiết mẫu.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">

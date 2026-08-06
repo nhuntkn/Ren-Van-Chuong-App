@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabaseServerClient";
+import { cookies } from "next/headers";
 
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
@@ -36,15 +37,17 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+    const cookieStore = await cookies();
+    const role = cookieStore.get("kho_role")?.value;
+    if (role !== "admin") {
+        return Response.json({ error: "Chỉ quản lý mới được thêm mẫu hàng mới." }, { status: 403 });
+    }
+
     const body = await request.json();
     const { itemCode, category, color, unit, note, imageUrl, hash, avgColor } = body;
 
-    if (!itemCode?.trim()) {
-        return Response.json({ error: "Thiếu mã mẫu." }, { status: 400 });
-    }
-    if (!category?.trim()) {
-        return Response.json({ error: "Thiếu loại mẫu hàng." }, { status: 400 });
-    }
+    if (!itemCode?.trim()) return Response.json({ error: "Thiếu mã mẫu." }, { status: 400 });
+    if (!category?.trim()) return Response.json({ error: "Thiếu loại mẫu hàng." }, { status: 400 });
 
     const { data, error } = await supabaseServer
         .from("items")
@@ -63,9 +66,7 @@ export async function POST(request) {
         .single();
 
     if (error) {
-        if (error.code === "23505") {
-            return Response.json({ error: "Mã mẫu đã tồn tại." }, { status: 409 });
-        }
+        if (error.code === "23505") return Response.json({ error: "Mã mẫu đã tồn tại." }, { status: 409 });
         return Response.json({ error: error.message }, { status: 500 });
     }
 

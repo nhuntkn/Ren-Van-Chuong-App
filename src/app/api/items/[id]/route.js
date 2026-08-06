@@ -47,6 +47,9 @@ export async function PATCH(request, { params }) {
     if (body.note !== undefined) updateData.note = body.note;
     if (body.isPublished !== undefined) updateData.is_published = body.isPublished;
     if (body.price !== undefined) updateData.price = body.price;
+    if (body.imageUrl !== undefined) updateData.image_url = body.imageUrl;
+    if (body.hash !== undefined) updateData.hash = body.hash;
+    if (body.avgColor !== undefined) updateData.avg_color = body.avgColor;
 
     const { error } = await supabaseServer
         .from("items")
