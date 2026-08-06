@@ -8,6 +8,7 @@ export function useContainerListLogic() {
     const [error, setError] = useState("");
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [newQr, setNewQr] = useState(null);
+    const [role, setRole] = useState(null);
 
     const fetchContainers = useCallback(async () => {
         setLoading(true);
@@ -28,9 +29,12 @@ export function useContainerListLogic() {
             .then((res) => res.json())
             .then((data) => setAllItems(Array.isArray(data) ? data : []))
             .catch(() => setAllItems([]));
+        fetch("/api/me")
+            .then((res) => res.json())
+            .then((data) => setRole(data.role))
+            .catch(() => setRole(null));
     }, [fetchContainers]);
 
-    // form.itemRows là mảng [{ itemId, qty }, ...] — hỗ trợ nhiều dòng cho bao hàng lẻ
     async function createContainer(form) {
         setError("");
 
@@ -77,6 +81,6 @@ export function useContainerListLogic() {
     return {
         containers, allItems, loading, error,
         showCreateForm, setShowCreateForm,
-        createContainer, newQr, setNewQr,
+        createContainer, newQr, setNewQr, role,
     };
 }

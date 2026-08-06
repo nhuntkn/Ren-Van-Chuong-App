@@ -8,7 +8,7 @@ import { CONTAINER_TYPES } from "@/lib/constants";
 const emptyRow = () => ({ itemId: "", qty: "" });
 
 export default function ContainerListPage() {
-    const { containers, allItems, loading, error, showCreateForm, setShowCreateForm, createContainer, newQr, setNewQr } =
+    const { containers, allItems, loading, error, showCreateForm, setShowCreateForm, createContainer, newQr, setNewQr, role } =
         useContainerListLogic();
 
     const [form, setForm] = useState({ type: "single", zone: "", shelf: "", itemRows: [emptyRow()] });
@@ -47,12 +47,14 @@ export default function ContainerListPage() {
         <main className="px-4 py-5">
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-lg font-semibold">Vật chứa</h1>
-                <button onClick={() => setShowCreateForm((v) => !v)} className="text-[12px] px-3 py-1.5 border border-border rounded-full">
-                    + Tạo bao mới
-                </button>
+                {role === "admin" && (
+                    <button onClick={() => setShowCreateForm((v) => !v)} className="text-[12px] px-3 py-1.5 border border-border rounded-full">
+                        + Tạo bao mới
+                    </button>
+                )}
             </div>
 
-            {showCreateForm && (
+            {role === "admin" && showCreateForm && (
                 <form onSubmit={handleCreate} className="bg-surface-alt rounded-lg p-3 mb-4 flex flex-col gap-2">
                     <div>
                         <label className="text-[12px] text-ink-soft block mb-1">Loại bao</label>
@@ -94,11 +96,7 @@ export default function ContainerListPage() {
                                     className="px-2 py-2 border border-border rounded-md text-sm"
                                 />
                                 {form.type === "mixed" && form.itemRows.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeRow(index)}
-                                        className="text-red-500 text-[12px] px-2"
-                                    >
+                                    <button type="button" onClick={() => removeRow(index)} className="text-red-500 text-[12px] px-2">
                                         Xóa
                                     </button>
                                 )}
@@ -106,11 +104,7 @@ export default function ContainerListPage() {
                         ))}
 
                         {form.type === "mixed" && (
-                            <button
-                                type="button"
-                                onClick={addRow}
-                                className="text-[12px] text-accent-dark font-medium mt-1"
-                            >
+                            <button type="button" onClick={addRow} className="text-[12px] text-accent-dark font-medium mt-1">
                                 + Thêm mẫu khác vào bao này
                             </button>
                         )}
