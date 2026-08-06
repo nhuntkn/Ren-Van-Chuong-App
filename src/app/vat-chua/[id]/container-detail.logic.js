@@ -120,6 +120,7 @@ export function useContainerDetailLogic() {
     
     return { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer, role,
         isEditingLocation, locationForm, setLocationForm, startEditLocation, cancelEditLocation, saveLocation, savingLocation };
-     };
-}
+
+};
+
 

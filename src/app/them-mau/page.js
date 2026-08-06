@@ -50,7 +50,7 @@ export default function AddItemPage() {
                 <div className="grid grid-cols-2 gap-2">
                     <div>
                         <label className="text-[12px] text-ink-soft block mb-1">Số lượng</label>
-                        <input type="number" value={form.qty} onChange={(e) => updateField("qty", e.target.value)} placeholder="0" className="w-full px-3 py-2 border border-border rounded-md text-sm" />
+                        <input type="number" inputMode="decimal" step="0.01" min="0" value={form.qty} onChange={(e) => updateField("qty", e.target.value)} placeholder="0" className="w-full px-3 py-2 border border-border rounded-md text-sm" />
                     </div>
                     <div>
                         <label className="text-[12px] text-ink-soft block mb-1">Đơn vị</label>

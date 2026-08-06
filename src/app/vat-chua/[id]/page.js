@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useContainerDetailLogic } from "./container-detail.logic";
-import LocationPill from "@/components/LocationPill";
+import LocationPill from "@/components/locationPill";
 
 export default function ContainerDetailPage() {
     const {
@@ -27,8 +27,8 @@ export default function ContainerDetailPage() {
     async function handleRemove(itemId, maxQty) {
         const inputVal = removeQtyMap[itemId];
         const qtyToRemove = inputVal ? Number(inputVal) : maxQty;
-        if (qtyToRemove <= 0 || qtyToRemove > maxQty) {
-            alert(`Số lượng lấy ra phải từ 1 đến ${maxQty}.`);
+        if (isNaN(qtyToRemove) || qtyToRemove <= 0 || qtyToRemove > maxQty) {
+            alert(`Số lượng lấy ra phải lớn hơn 0 và tối đa ${maxQty}.`);
             return;
         }
         await removeItemFromContainer(itemId, qtyToRemove);
@@ -139,7 +139,9 @@ export default function ContainerDetailPage() {
                             <div className="flex gap-2">
                                 <input
                                     type="number"
-                                    min="1"
+                                    inputMode="decimal"
+                                    step="0.01"
+                                    min="0"
                                     max={it.qty}
                                     placeholder={`Số lượng (tối đa ${it.qty})`}
                                     value={removeQtyMap[it.itemId] || ""}
@@ -162,7 +164,16 @@ export default function ContainerDetailPage() {
                     {allItems.map((it) => <option key={it.id} value={it.id}>{it.itemCode || it.name}</option>)}
                 </select>
                 <div className="flex gap-2">
-                    <input type="number" placeholder="Số lượng" value={addQty} onChange={(e) => setAddQty(e.target.value)} className="flex-1 px-3 py-2 border border-border rounded-md text-sm" />
+                    <input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        min="0"
+                        placeholder="Số lượng"
+                        value={addQty}
+                        onChange={(e) => setAddQty(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-border rounded-md text-sm"
+                    />
                     <button onClick={handleAdd} className="bg-accent text-white px-4 rounded-md text-sm font-semibold">Thêm</button>
                 </div>
             </div>

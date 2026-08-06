@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabaseServerClient";
+import { cookies } from "next/headers";
 
 export async function GET(request, { params }) {
     const { id } = await params;

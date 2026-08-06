@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useContainerListLogic } from "./container.logic";
-import LocationPill from "@/components/LocationPill";
+import LocationPill from "@/components/locationPill";
 import { CONTAINER_TYPES } from "@/lib/constants";
 
 const emptyRow = () => ({ itemId: "", qty: "" });
@@ -14,7 +14,6 @@ export default function ContainerListPage() {
     const [form, setForm] = useState({ type: "single", zone: "", shelf: "", itemRows: [emptyRow()] });
 
     function updateType(type) {
-        // Đổi sang "single" chỉ giữ lại đúng 1 dòng, tránh gán nhầm nhiều mẫu cho bao 1 mẫu
         if (type === "single") {
             setForm({ ...form, type, itemRows: [form.itemRows[0] || emptyRow()] });
         } else {
@@ -86,6 +85,9 @@ export default function ContainerListPage() {
                                 </select>
                                 <input
                                     type="number"
+                                    inputMode="decimal"
+                                    step="0.01"
+                                    min="0"
                                     placeholder="SL"
                                     value={row.qty}
                                     onChange={(e) => updateRow(index, "qty", e.target.value)}
