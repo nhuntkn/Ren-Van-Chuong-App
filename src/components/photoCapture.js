@@ -7,7 +7,7 @@ export default function PhotoCapture({ previewUrl, onCapture, placeholder = "Ch�
     function handleChange(e) {
         const file = e.target.files?.[0];
         if (file) onCapture(file);
-        setInputKey((k) => k + 1); // reset input để chọn lại cùng 1 file vẫn kích hoạt onChange
+        setInputKey((k) => k + 1);
     }
 
     return (
@@ -28,7 +28,6 @@ export default function PhotoCapture({ previewUrl, onCapture, placeholder = "Ch�
                     key={inputKey}
                     type="file"
                     accept="image/*"
-                    capture="environment"
                     className="hidden"
                     onChange={handleChange}
                 />
