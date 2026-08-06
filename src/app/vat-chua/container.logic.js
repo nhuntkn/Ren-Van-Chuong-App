@@ -30,6 +30,7 @@ export function useContainerListLogic() {
             .catch(() => setAllItems([]));
     }, [fetchContainers]);
 
+    // form.itemRows là mảng [{ itemId, qty }, ...] — hỗ trợ nhiều dòng cho bao hàng lẻ
     async function createContainer(form) {
         setError("");
 
@@ -37,8 +38,11 @@ export function useContainerListLogic() {
             setError("Vui lòng nhập ít nhất khu vực hoặc kệ, để không bị mất dấu vị trí sau này.");
             return false;
         }
-        if (form.itemId && (!form.qty || Number(form.qty) <= 0)) {
-            setError("Đã chọn mẫu hàng thì cần nhập số lượng hợp lệ.");
+
+        const validRows = form.itemRows.filter((row) => row.itemId && row.qty && Number(row.qty) > 0);
+
+        if (form.itemRows.some((row) => row.itemId && (!row.qty || Number(row.qty) <= 0))) {
+            setError("Có mẫu đã chọn nhưng chưa nhập số lượng hợp lệ.");
             return false;
         }
 
@@ -51,11 +55,11 @@ export function useContainerListLogic() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Tạo bao thất bại.");
 
-            if (form.itemId) {
+            for (const row of validRows) {
                 const linkRes = await fetch(`/api/containers/${data.id}/items`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ itemId: form.itemId, qty: Number(form.qty) }),
+                    body: JSON.stringify({ itemId: row.itemId, qty: Number(row.qty) }),
                 });
                 const linkData = await linkRes.json();
                 if (!linkRes.ok) throw new Error(linkData.error || "Gán mẫu vào bao thất bại.");

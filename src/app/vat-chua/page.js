@@ -2,20 +2,45 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useContainerListLogic } from "./container.logic";
-import LocationPill from "@/components/locationPill";
-import { CONTAINER_TYPES, UNITS } from "@/lib/constants";
+import LocationPill from "@/components/LocationPill";
+import { CONTAINER_TYPES } from "@/lib/constants";
+
+const emptyRow = () => ({ itemId: "", qty: "" });
 
 export default function ContainerListPage() {
     const { containers, allItems, loading, error, showCreateForm, setShowCreateForm, createContainer, newQr, setNewQr } =
         useContainerListLogic();
 
-    const [form, setForm] = useState({ type: "single", zone: "", shelf: "", itemId: "", qty: "" });
+    const [form, setForm] = useState({ type: "single", zone: "", shelf: "", itemRows: [emptyRow()] });
+
+    function updateType(type) {
+        // Đổi sang "single" chỉ giữ lại đúng 1 dòng, tránh gán nhầm nhiều mẫu cho bao 1 mẫu
+        if (type === "single") {
+            setForm({ ...form, type, itemRows: [form.itemRows[0] || emptyRow()] });
+        } else {
+            setForm({ ...form, type });
+        }
+    }
+
+    function updateRow(index, field, value) {
+        const newRows = [...form.itemRows];
+        newRows[index] = { ...newRows[index], [field]: value };
+        setForm({ ...form, itemRows: newRows });
+    }
+
+    function addRow() {
+        setForm({ ...form, itemRows: [...form.itemRows, emptyRow()] });
+    }
+
+    function removeRow(index) {
+        setForm({ ...form, itemRows: form.itemRows.filter((_, i) => i !== index) });
+    }
 
     async function handleCreate(e) {
         e.preventDefault();
         const success = await createContainer(form);
         if (success) {
-            setForm({ type: "single", zone: "", shelf: "", itemId: "", qty: "" });
+            setForm({ type: "single", zone: "", shelf: "", itemRows: [emptyRow()] });
         }
     }
 
@@ -32,14 +57,10 @@ export default function ContainerListPage() {
                 <form onSubmit={handleCreate} className="bg-surface-alt rounded-lg p-3 mb-4 flex flex-col gap-2">
                     <div>
                         <label className="text-[12px] text-ink-soft block mb-1">Loại bao</label>
-                        <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-3 py-2 border border-border rounded-md text-sm">
+                        <select value={form.type} onChange={(e) => updateType(e.target.value)} className="w-full px-3 py-2 border border-border rounded-md text-sm">
                             {CONTAINER_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
                     </div>
-
-                    <p className="text-[11px] text-ink-soft">
-                        Có thể gán mẫu ngay bên dưới, hoặc để trống và gán sau.
-                    </p>
 
                     <div className="grid grid-cols-2 gap-2">
                         <input placeholder="Khu vực" value={form.zone} onChange={(e) => setForm({ ...form, zone: e.target.value })} className="px-3 py-2 border border-border rounded-md text-sm" />
@@ -47,27 +68,49 @@ export default function ContainerListPage() {
                     </div>
 
                     <div className="border-t border-border pt-2 mt-1">
-                        <label className="text-[12px] text-ink-soft block mb-1">Gán mẫu hàng (tùy chọn)</label>
-                        <select value={form.itemId} onChange={(e) => setForm({ ...form, itemId: e.target.value })} className="w-full px-3 py-2 border border-border rounded-md text-sm mb-2">
-                            <option value="">Không chọn — chỉ tạo bao trống</option>
-                            {allItems.map((it) => (
-                                <option key={it.id} value={it.id}>{it.itemCode || it.name}</option>
-                            ))}
-                        </select>
+                        <label className="text-[12px] text-ink-soft block mb-1">
+                            {form.type === "mixed" ? "Gán các mẫu hàng vào bao (tùy chọn)" : "Gán mẫu hàng (tùy chọn)"}
+                        </label>
 
-                        {form.itemId && (
-                            <div className="grid grid-cols-2 gap-2">
+                        {form.itemRows.map((row, index) => (
+                            <div key={index} className="grid grid-cols-[1fr_90px_auto] gap-2 mb-2">
+                                <select
+                                    value={row.itemId}
+                                    onChange={(e) => updateRow(index, "itemId", e.target.value)}
+                                    className="px-3 py-2 border border-border rounded-md text-sm"
+                                >
+                                    <option value="">Chọn mẫu hàng...</option>
+                                    {allItems.map((it) => (
+                                        <option key={it.id} value={it.id}>{it.itemCode || it.name}</option>
+                                    ))}
+                                </select>
                                 <input
                                     type="number"
-                                    placeholder="Số lượng"
-                                    value={form.qty}
-                                    onChange={(e) => setForm({ ...form, qty: e.target.value })}
-                                    className="px-3 py-2 border border-border rounded-md text-sm"
+                                    placeholder="SL"
+                                    value={row.qty}
+                                    onChange={(e) => updateRow(index, "qty", e.target.value)}
+                                    className="px-2 py-2 border border-border rounded-md text-sm"
                                 />
-                                <select value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} className="px-3 py-2 border border-border rounded-md text-sm">
-                                    {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
-                                </select>
+                                {form.type === "mixed" && form.itemRows.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => removeRow(index)}
+                                        className="text-red-500 text-[12px] px-2"
+                                    >
+                                        Xóa
+                                    </button>
+                                )}
                             </div>
+                        ))}
+
+                        {form.type === "mixed" && (
+                            <button
+                                type="button"
+                                onClick={addRow}
+                                className="text-[12px] text-accent-dark font-medium mt-1"
+                            >
+                                + Thêm mẫu khác vào bao này
+                            </button>
                         )}
                     </div>
 
