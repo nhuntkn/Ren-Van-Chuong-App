@@ -11,7 +11,7 @@ export async function GET(request) {
     const { data, error } = await supabase
         .from("items")
         .select("item_code")
-        .ilike("item_code", `${prefix}%`);
+        .ilike("item_code", `${prefix}-%`);
 
     if (error) {
         return Response.json({ error: error.message }, { status: 500 });
@@ -19,7 +19,7 @@ export async function GET(request) {
 
     let maxSeq = 0;
     for (const row of data) {
-        const match = row.item_code?.match(/(\d+)\s*$/);
+        const match = row.item_code?.match(new RegExp(`^${prefix}-(\\d+)$`));
         if (match) {
             const num = parseInt(match[1], 10);
             if (num > maxSeq) maxSeq = num;
@@ -27,5 +27,5 @@ export async function GET(request) {
     }
 
     const nextSeq = String(maxSeq + 1).padStart(2, "0");
-    return Response.json({ suggestedCode: `${prefix} - mẫu ${nextSeq}` });
+    return Response.json({ suggestedCode: `${prefix}-${nextSeq}` });
 }
