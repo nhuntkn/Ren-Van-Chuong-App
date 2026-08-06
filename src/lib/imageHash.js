@@ -1,9 +1,17 @@
 export function computeHashAndColor(img) {
+    // Cắt vùng trung tâm (70% kích thước gốc) để loại bớt nền lộ ra ở rìa ảnh,
+    // giúp hash và màu trung bình phản ánh đúng hoạ tiết thay vì bị pha loãng bởi nền.
+    const cropRatio = 0.7;
+    const cropW = img.width * cropRatio;
+    const cropH = img.height * cropRatio;
+    const cropX = (img.width - cropW) / 2;
+    const cropY = (img.height - cropH) / 2;
+
     const c = document.createElement("canvas");
     c.width = 9;
     c.height = 8;
     const ctx = c.getContext("2d");
-    ctx.drawImage(img, 0, 0, 9, 8);
+    ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, 9, 8);
     const data = ctx.getImageData(0, 0, 9, 8).data;
 
     const gray = [];
@@ -22,10 +30,10 @@ export function computeHashAndColor(img) {
     }
 
     const c2 = document.createElement("canvas");
-    c2.wigth = 16;
+    c2.width = 16;
     c2.height = 16;
     const ctx2 = c2.getContext("2d");
-    ctx2.drawImage(img, 0, 0, 16, 16);
+    ctx2.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, 16, 16);
     const d2 = ctx2.getImageData(0, 0, 16, 16).data;
 
     let r = 0, g = 0, b = 0;
@@ -49,7 +57,10 @@ export function resizeToDataURL(img, maxW, quality) {
     const c = document.createElement("canvas");
     c.width = w;
     c.height = h;
-    c.getContext("2d").drawImage(img, 0, 0, w, h);
+    const ctx = c.getContext("2d");
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, w, h);
     return c.toDataURL("image/jpeg", quality);
 }
 
