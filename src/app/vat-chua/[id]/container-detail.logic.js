@@ -85,6 +85,42 @@ export function useContainerDetailLogic() {
         }
     }
 
-    return { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer, role };
-}
+    const [isEditingLocation, setIsEditingLocation] = useState(false);
+    const [locationForm, setLocationForm] = useState({ zone: "", shelf: "" });
+    const [savingLocation, setSavingLocation] = useState(false);
+
+    function startEditLocation() {
+        setLocationForm({ zone: container.zone || "", shelf: container.shelf || "" });
+        setIsEditingLocation(true);
+    }
+
+    function cancelEditLocation() {
+        setIsEditingLocation(false);
+    }
+
+    async function saveLocation() {
+        setSavingLocation(true);
+        setError("");
+        try {
+            const res = await fetch(`/api/containers/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: container.type, zone: locationForm.zone, shelf: locationForm.shelf }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Lưu vị trí thất bại.");
+            setIsEditingLocation(false);
+            await load();
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setSavingLocation(false);
+        }
+    }
+    
+    return { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer, role,
+        isEditingLocation, locationForm, setLocationForm, startEditLocation, cancelEditLocation, saveLocation, savingLocation };
+
+};
+
 

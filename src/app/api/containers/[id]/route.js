@@ -1,5 +1,6 @@
 import { supabaseServer } from "@/lib/supabaseServerClient";
 import { generateQrDataUrl } from "@/lib/qr";
+import { cookies } from "next/headers";
 
 export async function GET(request, { params }) {
     const { id } = await params;
@@ -20,11 +21,18 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
     const { id } = await params;
+
+    const cookieStore = await cookies();
+    const role = cookieStore.get("kho_role")?.value;
+    if (role !== "admin") {
+        return Response.json({ error: "Chỉ quản lý mới được sửa vị trí bao." }, { status: 403 });
+    }
+
     const body = await request.json();
 
     const { error } = await supabaseServer
         .from("containers")
-        .update({ type: body.type, zone: body.zone, shelf: body.shelf, bin: body.bin })
+        .update({ type: body.type, zone: body.zone, shelf: body.shelf })
         .eq("id", id);
 
     if (error) return Response.json({ error: error.message }, { status: 500 });
