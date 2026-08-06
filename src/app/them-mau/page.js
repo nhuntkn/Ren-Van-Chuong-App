@@ -1,12 +1,32 @@
 "use client";
+import { useState, useEffect } from "react";
 import { useAddItemLogic } from "./add-item.logic";
 import PhotoCapture from "@/components/photoCapture";
 import { CATEGORIES, UNITS } from "@/lib/constants";
 import Link from "next/link";
 
 export default function AddItemPage() {
+    const [role, setRole] = useState(null);
+
+    useEffect(() => {
+        fetch("/api/me").then((r) => r.json()).then((d) => setRole(d.role)).catch(() => setRole(null));
+    }, []);
+
     const { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error, duplicateWarning } =
         useAddItemLogic();
+
+    if (role === null) {
+        return <main className="px-4 py-5 text-ink-soft text-sm">Đang tải...</main>;
+    }
+
+    if (role !== "admin") {
+        return (
+            <main className="px-4 py-10 text-center">
+                <p className="text-ink-soft text-sm mb-3">Chỉ quản lý mới có quyền thêm mẫu hàng mới.</p>
+                <Link href="/kho-hang" className="text-accent-dark text-sm underline">Quay lại Kho hàng</Link>
+            </main>
+        );
+    }
 
     return (
         <main className="px-4 py-5">

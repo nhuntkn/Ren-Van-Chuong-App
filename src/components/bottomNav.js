@@ -1,13 +1,14 @@
 "use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearRoleCookie } from "@/lib/roleCookie";
 
-const NAV_ITEMS = [
-    { href: "/kho-hang", label: "Kho hàng", icon: "list" },
-    { href: "/quet-anh", label: "Quét ảnh", icon: "scan" },
-    { href: "/vat-chua", label: "Vật chứa", icon: "box" },
-    { href: "/them-mau", label: "Thêm mẫu", icon: "plus" },
+const ALL_NAV_ITEMS = [
+    { href: "/kho-hang", label: "Kho hàng", icon: "list", adminOnly: false },
+    { href: "/quet-anh", label: "Quét ảnh", icon: "scan", adminOnly: false },
+    { href: "/vat-chua", label: "Vật chứa", icon: "box", adminOnly: false },
+    { href: "/them-mau", label: "Thêm mẫu", icon: "plus", adminOnly: true },
 ];
 
 const ICONS = {
@@ -42,10 +43,18 @@ const ICONS = {
 export default function BottomNav() {
     const pathname = usePathname();
     const router = useRouter();
+    const [role, setRole] = useState(null);
 
-    if (pathname === "/login") {
-        return null;
-    }
+    useEffect(() => {
+        fetch("/api/me")
+            .then((r) => r.json())
+            .then((d) => setRole(d.role))
+            .catch(() => setRole(null));
+    }, []);
+
+    if (pathname === "/login") return null;
+
+    const navItems = ALL_NAV_ITEMS.filter((item) => !item.adminOnly || role === "admin");
 
     function handleLogout() {
         clearRoleCookie();
@@ -55,7 +64,7 @@ export default function BottomNav() {
 
     return (
         <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-border flex max-w-[480px] mx-auto z-10">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
                 const isActive = pathname.startsWith(item.href);
                 return (
                     <Link
