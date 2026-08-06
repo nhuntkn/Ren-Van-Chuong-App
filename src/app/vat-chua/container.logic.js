@@ -7,7 +7,6 @@ export function useContainerListLogic() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [showCreateForm, setShowCreateForm] = useState(false);
-    const [newQr, setNewQr] = useState(null);
     const [role, setRole] = useState(null);
 
     const fetchContainers = useCallback(async () => {
@@ -25,62 +24,9 @@ export function useContainerListLogic() {
 
     useEffect(() => {
         fetchContainers();
-        fetch("/api/items")
-            .then((res) => res.json())
-            .then((data) => setAllItems(Array.isArray(data) ? data : []))
-            .catch(() => setAllItems([]));
-        fetch("/api/me")
-            .then((res) => res.json())
-            .then((data) => setRole(data.role))
-            .catch(() => setRole(null));
+        fetch("/api/items").then((r) => r.json()).then((d) => setAllItems(Array.isArray(d) ? d : [])).catch(() => setAllItems([]));
+        fetch("/api/me").then((r) => r.json()).then((d) => setRole(d.role)).catch(() => setRole(null));
     }, [fetchContainers]);
 
-    async function createContainer(form) {
-        setError("");
-
-        if (!form.zone.trim() && !form.shelf.trim()) {
-            setError("Vui lòng nhập ít nhất khu vực hoặc kệ, để không bị mất dấu vị trí sau này.");
-            return false;
-        }
-
-        const validRows = form.itemRows.filter((row) => row.itemId && row.qty && Number(row.qty) > 0);
-
-        if (form.itemRows.some((row) => row.itemId && (!row.qty || Number(row.qty) <= 0))) {
-            setError("Có mẫu đã chọn nhưng chưa nhập số lượng hợp lệ.");
-            return false;
-        }
-
-        try {
-            const res = await fetch("/api/containers", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ type: form.type, zone: form.zone, shelf: form.shelf }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Tạo bao thất bại.");
-
-            for (const row of validRows) {
-                const linkRes = await fetch(`/api/containers/${data.id}/items`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ itemId: row.itemId, qty: Number(row.qty) }),
-                });
-                const linkData = await linkRes.json();
-                if (!linkRes.ok) throw new Error(linkData.error || "Gán mẫu vào bao thất bại.");
-            }
-
-            setNewQr(data);
-            await fetchContainers();
-            return true;
-        } catch (err) {
-            setError(err.message);
-            return false;
-        }
-    }
-
-    return {
-        containers, allItems, loading, error,
-        showCreateForm, setShowCreateForm,
-        createContainer, newQr, setNewQr, role,
-    };
+    return { containers, allItems, loading, error, showCreateForm, setShowCreateForm, fetchContainers, role };
 }
