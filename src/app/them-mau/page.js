@@ -2,9 +2,10 @@
 import { useAddItemLogic } from "./add-item.logic";
 import PhotoCapture from "@/components/photoCapture";
 import { CATEGORIES, UNITS } from "@/lib/constants";
+import Link from "next/link";
 
 export default function AddItemPage() {
-    const { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error } =
+    const { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error, duplicateWarning } =
         useAddItemLogic();
 
     return (
@@ -13,6 +14,20 @@ export default function AddItemPage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 <PhotoCapture previewUrl={previewUrl} onCapture={handlePhotoCapture} />
+
+                {duplicateWarning && (
+                <div className="bg-[#FBEFD9] border border-[#E8C97A] rounded-md p-3 text-[12.5px]">
+                    <p className="text-[#9A6A1E] font-medium mb-1">
+                        Có thể mẫu này đã tồn tại ({duplicateWarning.score}% giống)
+                    </p>
+                    <p className="text-[#9A6A1E]">
+                        Mẫu <b>{duplicateWarning.name}</b> trong kho khá giống ảnh vừa chụp.{" "}
+                        <Link href={`/kho-hang/${duplicateWarning.id}`} className="underline">Xem mẫu này</Link>
+                        {" "}hoặc vào{" "}
+                        <Link href="/quet-anh" className="underline">Quét ảnh</Link> để kiểm tra kỹ hơn trước khi tạo mới.
+                    </p>
+                </div>
+            )}
 
                 <div>
                     <label className="text-[12px] text-ink-soft block mb-1">Mã mẫu</label>

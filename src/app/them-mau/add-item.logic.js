@@ -44,11 +44,29 @@ export function useAddItemLogic() {
         if (field === "itemCode") setCodeTouched(true);
     }
 
+    const [duplicateWarning, setDuplicateWarning] = useState(null);
+
     async function handlePhotoCapture(file) {
         setPhotoFile(file);
         const img = await fileToImage(file);
         setPreviewUrl(resizeToDataURL(img, 320, 0.65));
-        setFeature(computeHashAndColor(img));
+        const newFeature = computeHashAndColor(img);
+        setFeature(newFeature);
+
+        setDuplicateWarning(null);
+        try {
+            const res = await fetch("/api/match", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newFeature),
+            });
+            const matches = await res.json();
+            if (Array.isArray(matches) && matches.length > 0 && matches[0].score >= 80) {
+                setDuplicateWarning(matches[0]);
+            }
+        } catch (err) {
+            // im lặng bỏ qua nếu kiểm tra trùng thất bại, không chặn việc thêm mẫu
+        }
     }
 
     async function handleSubmit(e) {
@@ -108,5 +126,5 @@ export function useAddItemLogic() {
         }
     }
 
-    return { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error };
+    return { form, updateField, previewUrl, handlePhotoCapture, handleSubmit, submitting, error, duplicateWarning };
 }
