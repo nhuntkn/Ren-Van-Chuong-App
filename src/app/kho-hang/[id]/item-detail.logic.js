@@ -18,6 +18,13 @@ export function useItemDetailLogic() {
     const [savingNote, setSavingNote] = useState(false);
     const [role, setRole] = useState(null);
 
+    const [allItems, setAllItems] = useState([]);
+    const [showCreateContainer, setShowCreateContainer] = useState(false);
+
+    useEffect(() => {
+        fetch("/api/items").then((r) => r.json()).then((d) => setAllItems(Array.isArray(d) ? d : [])).catch(() => setAllItems([]));
+    }, []);
+
     useEffect(() => {
         fetch("/api/me")
             .then((r) => r.json())
@@ -125,5 +132,6 @@ export function useItemDetailLogic() {
         deleteItem,
         isEditingNote, noteInput, setNoteInput, startEditNote, cancelEditNote, saveNote, savingNote,
         role,
+        allItems, showCreateContainer, setShowCreateContainer,
     };
 }

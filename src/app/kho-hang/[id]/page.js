@@ -1,14 +1,16 @@
 "use client";
 import { useItemDetailLogic } from "./item-detail.logic";
 import ContainerBreakdownList from "@/components/containerBreakdownList";
+import CreateContainerForm from "@/components/createContainerForm";
 
 export default function ItemDetailPage() {
     const {
-        item, containers, loading, error,
+        item, containers, loading, error, load,
         priceInput, setPriceInput, togglePublish, publishLoading,
         deleteItem,
         isEditingNote, noteInput, setNoteInput, startEditNote, cancelEditNote, saveNote, savingNote,
         role,
+        allItems, showCreateContainer, setShowCreateContainer,
     } = useItemDetailLogic();
 
     if (loading) return <main className="px-4 py-5 text-ink-soft text-sm">Đang tải...</main>;
@@ -74,7 +76,23 @@ export default function ItemDetailPage() {
                 )}
             </div>
 
-            <h2 className="text-[13px] font-semibold text-ink-soft mb-2">Nằm trong {containers.length} bao</h2>
+            <div className="flex justify-between items-center mb-2">
+                <h2 className="text-[13px] font-semibold text-ink-soft">Nằm trong {containers.length} bao</h2>
+                {role === "admin" && (
+                    <button onClick={() => setShowCreateContainer((v) => !v)} className="text-[11px] text-accent-dark font-medium">
+                        + Tạo bao mới
+                    </button>
+                )}
+            </div>
+
+            {role === "admin" && showCreateContainer && (
+                <CreateContainerForm
+                    allItems={allItems}
+                    presetItem={{ id: item.id, itemCode: item.itemCode }}
+                    onCreated={load}
+                />
+            )}
+
             <ContainerBreakdownList containers={containers} />
 
             {role === "admin" && (
@@ -83,10 +101,10 @@ export default function ItemDetailPage() {
                         <input
                             type="number"
                             placeholder="Giá bán (₫)"
-                        value={priceInput}
-                        onChange={(e) => setPriceInput(e.target.value)}
-                        className="w-full px-3 py-2 border border-border rounded-md text-sm mb-2"
-                    />
+                            value={priceInput}
+                            onChange={(e) => setPriceInput(e.target.value)}
+                            className="w-full px-3 py-2 border border-border rounded-md text-sm mb-2"
+                        />
                     )}
                     <button
                         onClick={togglePublish}
