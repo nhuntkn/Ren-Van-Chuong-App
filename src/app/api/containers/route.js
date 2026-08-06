@@ -42,13 +42,29 @@ export async function POST(request) {
     const body = await request.json();
     const { type, zone, shelf } = body;
 
-    const id = generateContainerId();
+    let id;
+    let inserted = false;
+    let attempts = 0;
 
-    const { error } = await supabaseServer
-        .from("containers")
-        .insert({ id, type: type || "single", zone, shelf });
+    while (!inserted && attempts < 5) {
+        id = generateContainerId();
+        const { error } = await supabaseServer
+            .from("containers")
+            .insert({ id, type: type || "single", zone, shelf });
 
-    if (error) return Response.json({ error: error.message }, { status: 500 });
+        if (!error) {
+            inserted = true;
+        } else if (error.code === "23505") {
+            // Trùng mã (rất hiếm) — thử sinh mã khác
+            attempts++;
+        } else {
+            return Response.json({ error: error.message }, { status: 500 });
+        }
+    }
+
+    if (!inserted) {
+        return Response.json({ error: "Không thể tạo mã bao, vui lòng thử lại." }, { status: 500 });
+    }
 
     const qrDataUrl = await generateQrDataUrl(id);
 

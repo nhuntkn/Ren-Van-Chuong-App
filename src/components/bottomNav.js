@@ -6,7 +6,7 @@ import { clearRoleCookie } from "@/lib/roleCookie";
 
 const ALL_NAV_ITEMS = [
     { href: "/kho-hang", label: "Kho hàng", icon: "list", adminOnly: false },
-    { href: "/quet-anh", label: "Quét ảnh", icon: "scan", adminOnly: false },
+    { href: "/quet-anh", label: "Quét", icon: "scan", adminOnly: false },
     { href: "/vat-chua", label: "Vật chứa", icon: "box", adminOnly: false },
     { href: "/them-mau", label: "Thêm mẫu", icon: "plus", adminOnly: true },
 ];
