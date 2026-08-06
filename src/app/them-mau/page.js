@@ -55,7 +55,7 @@ export default function AddItemPage() {
                         type="text"
                         value={form.itemCode}
                         onChange={(e) => updateField("itemCode", e.target.value)}
-                        placeholder="VD: CHX - mẫu 09"
+                        placeholder="VD: CHX-09"
                         className="w-full px-3 py-2 border border-border rounded-md text-sm font-mono"
                     />
                     <p className="text-[11px] text-ink-faint mt-1">Tự động gợi ý theo loại, có thể sửa lại.</p>
