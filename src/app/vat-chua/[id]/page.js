@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useContainerDetailLogic } from "./container-detail.logic";
 import LocationPill from "@/components/locationPill";
+import Link from "next/link";
 
 export default function ContainerDetailPage() {
     const {
@@ -131,10 +132,15 @@ export default function ContainerDetailPage() {
                 {items.length === 0 && <p className="text-ink-soft text-sm">Bao này đang trống.</p>}
                 {items.map((it) => (
                     <div key={it.itemId} className="border border-border rounded-lg px-3 py-2.5">
-                        <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium">{it.itemCode || it.name}</span>
-                            <span className="text-[13px] text-ink-soft">Hiện có: {it.qty} {it.unit}</span>
-                        </div>
+                        <Link href={`/kho-hang/${it.itemId}`} className="flex items-center gap-3 mb-2">
+                            <div className="w-45 h-45 rounded-lg bg-surface-alt overflow-hidden flex-shrink-0">
+                                {it.imageUrl && <img src={it.imageUrl} alt={it.itemCode} className="w-full h-full object-cover" />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{it.itemCode || it.name}</p>
+                                <p className="text-[12px] text-ink-soft">Hiện có: {it.qty} {it.unit}</p>
+                            </div>
+                        </Link>
                         {role === "admin" && (
                             <div className="flex gap-2">
                                 <input

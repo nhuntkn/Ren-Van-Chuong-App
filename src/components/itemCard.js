@@ -18,7 +18,7 @@ export default function ItemCard({ item }) {
             href={`/kho-hang/${item.id}`}
             className="flex gap-3 bg-white border border-border rounded-xl p-2.5"
         >
-            <div className="w-14 h-14 rounded-lg bg-surface-alt overflow-hidden flex-shrink-0">
+            <div className="w-45 h-45 rounded-lg bg-surface-alt overflow-hidden flex-shrink-0">
                 {item.imageUrl && (
                     <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                 )}
