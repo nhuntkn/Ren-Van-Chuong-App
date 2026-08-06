@@ -60,6 +60,7 @@ export default function AddItemPage() {
                         <input placeholder="Khu vực" value={form.zone} onChange={(e) => updateField("zone", e.target.value)} className="px-3 py-2 border border-border rounded-md text-sm" />
                         <input placeholder="Kệ số" value={form.shelf} onChange={(e) => updateField("shelf", e.target.value)} className="px-3 py-2 border border-border rounded-md text-sm" />
                     </div>
+                    <p className="text-[11px] text-ink-faint mt-1">Để trống nếu chưa muốn tạo bao ngay — có thể gán bao sau ở trang chi tiết mẫu.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
