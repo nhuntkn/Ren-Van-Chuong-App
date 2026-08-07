@@ -49,6 +49,32 @@ export default function ItemDetailPage() {
                 <span className="text-lg font-semibold">{item.totalStock} {item.unit}</span>
             </div>
 
+            {(item.fabricWidth || item.conversionInfo || item.wholesalePrice) && (
+                <div className="bg-surface-alt rounded-lg p-3 mb-4">
+                    <p className="text-[12px] text-ink-soft mb-2">Thông tin quy cách</p>
+                    <div className="flex flex-col gap-1.5 text-[13.5px]">
+                        {item.fabricWidth && (
+                            <div className="flex justify-between">
+                                <span className="text-ink-soft">Khổ</span>
+                                <span className="font-medium">{item.fabricWidth}</span>
+                            </div>
+                        )}
+                        {item.conversionInfo && (
+                            <div className="flex justify-between">
+                                <span className="text-ink-soft">Quy đổi</span>
+                                <span className="font-medium">{item.conversionInfo}</span>
+                            </div>
+                        )}
+                        {item.wholesalePrice && (
+                            <div className="flex justify-between">
+                                <span className="text-ink-soft">Giá sỉ 1kg (₫)</span>
+                                <span className="font-medium">{Number(item.wholesalePrice).toLocaleString("vi-VN")}₫</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <div className="mb-4">
                 <div className="flex justify-between items-center mb-1">
                     <p className="text-[12px] text-ink-soft">Ghi chú</p>
@@ -119,46 +145,54 @@ export default function ItemDetailPage() {
                         </div>
                         <input
                             type="text"
+                            placeholder="Quy đổi (VD: 1kg = 100m)"
+                            value={priceForm.conversionInfo}
+                            onChange={(e) => setPriceForm({ ...priceForm, conversionInfo: e.target.value })}
+                            className="px-3 py-2 border border-border rounded-md text-sm"
+                        />
+                        </div>
+
+                        <input
+                            type="text"
                             placeholder="Nhà cung cấp"
                             value={priceForm.supplier}
                             onChange={(e) => setPriceForm({ ...priceForm, supplier: e.target.value })}
                             className="px-3 py-2 border border-border rounded-md text-sm"
                         />
+                        <div className="grid grid-cols-3 gap-2 mb-2">
+                            <div>
+                                <label className="text-[11px] text-ink-faint block mb-1">Giá nhập</label>
+                                <input
+                                    type="number"
+                                    value={priceForm.costPrice}
+                                    onChange={(e) => setPriceForm({ ...priceForm, costPrice: e.target.value })}
+                                    className="w-full px-2 py-2 border border-border rounded-md text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[11px] text-ink-faint block mb-1">Giá sỉ 1kg (₫)</label>
+                                <input
+                                    type="number"
+                                    value={priceForm.wholesalePrice}
+                                    onChange={(e) => setPriceForm({ ...priceForm, wholesalePrice: e.target.value })}
+                                    className="w-full px-2 py-2 border border-border rounded-md text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[11px] text-ink-faint block mb-1">Giá lẻ</label>
+                                <input
+                                    type="number"
+                                    value={priceForm.price}
+                                    onChange={(e) => setPriceForm({ ...priceForm, price: e.target.value })}
+                                    className="w-full px-2 py-2 border border-border rounded-md text-sm"
+                                />
+                            </div>
+                        </div>
+                        <button onClick={savePriceInfo} disabled={savingPrice} className="w-full bg-accent text-white text-sm font-semibold py-2 rounded-md disabled:opacity-60">
+                            {savingPrice ? "Đang lưu..." : "Lưu thông tin giá"}
+                        </button>
                     </div>
-                    <div className="grid grid-cols-3 gap-2 mb-2">
-                        <div>
-                            <label className="text-[11px] text-ink-faint block mb-1">Giá nhập</label>
-                            <input
-                                type="number"
-                                value={priceForm.costPrice}
-                                onChange={(e) => setPriceForm({ ...priceForm, costPrice: e.target.value })}
-                                className="w-full px-2 py-2 border border-border rounded-md text-sm"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[11px] text-ink-faint block mb-1">Giá sỉ</label>
-                            <input
-                                type="number"
-                                value={priceForm.wholesalePrice}
-                                onChange={(e) => setPriceForm({ ...priceForm, wholesalePrice: e.target.value })}
-                                className="w-full px-2 py-2 border border-border rounded-md text-sm"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-[11px] text-ink-faint block mb-1">Giá lẻ</label>
-                            <input
-                                type="number"
-                                value={priceForm.price}
-                                onChange={(e) => setPriceForm({ ...priceForm, price: e.target.value })}
-                                className="w-full px-2 py-2 border border-border rounded-md text-sm"
-                            />
-                        </div>
-                    </div>
-                    <button onClick={savePriceInfo} disabled={savingPrice} className="w-full bg-accent text-white text-sm font-semibold py-2 rounded-md disabled:opacity-60">
-                        {savingPrice ? "Đang lưu..." : "Lưu thông tin giá"}
-                    </button>
-                </div>
-            )}
+                )}
 
             {role === "admin" && (
                 <div className="bg-surface-alt rounded-lg p-3 mt-3">

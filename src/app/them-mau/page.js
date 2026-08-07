@@ -92,21 +92,46 @@ export default function AddItemPage() {
                         </datalist>
                     </div>
                 </div>
+                
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                        <label className="text-[12px] text-ink-soft block mb-1">Khổ</label>
+                        <input
+                            type="text"
+                            list="width-options"
+                            value={form.fabricWidth}
+                            onChange={(e) => updateField("fabricWidth", e.target.value)}
+                            placeholder="VD: 1.5cm"
+                            className="w-full px-3 py-2 border border-border rounded-md text-sm"
+                        />
+                        <datalist id="width-options">
+                            {widthOptions.map((w) => <option key={w} value={w} />)}
+                        </datalist>
+                    </div>
+
+                    <div>
+                        <label className="text-[12px] text-ink-soft block mb-1">Quy đổi</label>
+                        <input
+                            type="text"
+                            value={form.conversionInfo}
+                            onChange={(e) => updateField("conversionInfo", e.target.value)}
+                            placeholder="VD: 1kg = 100m"
+                            className="w-full px-3 py-2 border border-border rounded-md text-sm"
+                        />
+                    </div>
+                </div>
 
                 <div>
-                    <label className="text-[12px] text-ink-soft block mb-1">Khổ</label>
+                    <label className="text-[12px] text-ink-soft block mb-1">Giá sỉ 1kg (₫)</label>
                     <input
-                        type="text"
-                        list="width-options"
-                        value={form.fabricWidth}
-                        onChange={(e) => updateField("fabricWidth", e.target.value)}
-                        placeholder="VD: 1.5cm"
+                        type="number"
+                        value={form.wholesalePrice}
+                        onChange={(e) => updateField("wholesalePrice", e.target.value)}
+                        placeholder="240000"
                         className="w-full px-3 py-2 border border-border rounded-md text-sm"
                     />
-                    <datalist id="width-options">
-                        {widthOptions.map((w) => <option key={w} value={w} />)}
-                    </datalist>
                 </div>
+
 
                 <div>
                     <label className="text-[12px] text-ink-soft block mb-1">Vị trí bao đầu tiên</label>
