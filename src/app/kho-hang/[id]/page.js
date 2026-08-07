@@ -29,7 +29,6 @@ export default function ItemDetailPage() {
                 <input
                     type="file"
                     accept="image/*"
-                    capture="environment"
                     className="hidden"
                     onChange={(e) => e.target.files?.[0] && changePhoto(e.target.files[0])}
                 />
