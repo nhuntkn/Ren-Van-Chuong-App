@@ -24,7 +24,7 @@ export function useItemDetailLogic() {
     const [changingPhoto, setChangingPhoto] = useState(false);
 
     useEffect(() => {
-        fetch("/api/items").then((r) => r.json()).then((d) => setAllItems(Array.isArray(d) ? d : [])).catch(() => setAllItems([]));
+        fetch("/api/items").then((r) => r.json()).then((d) => setAllItems(Array.isArray(d.items) ? d.items : []))
     }, []);
 
     useEffect(() => {
@@ -136,10 +136,18 @@ export function useItemDetailLogic() {
             const newPreview = resizeToDataURL(img, 800, 0.85);
             const feature = computeHashAndColor(img);
 
+            const uploadRes = await fetch("/api/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ dataUrl: newPreview }),
+            });
+            const uploadData = await uploadRes.json();
+            if (!uploadRes.ok) throw new Error(uploadData.error || "Tải ảnh lên thất bại.");
+
             const res = await fetch(`/api/items/${id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ imageUrl: newPreview, hash: feature.hash, avgColor: feature.avgColor }),
+                body: JSON.stringify({ imageUrl: uploadData.url, hash: feature.hash, avgColor: feature.avgColor }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Đổi ảnh thất bại.");
