@@ -4,13 +4,19 @@ import { cookies } from "next/headers";
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
+    const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const limit = parseInt(searchParams.get("limit") || "50", 10);
 
-    let query = supabaseServer.from("items").select("*");
+    let query = supabaseServer.from("items").select("*", { count: "exact" });
+
     if (search) {
         query = query.or(`item_code.ilike.%${search}%,color.ilike.%${search}%`);
     }
 
-    const { data: itemsData, error: itemsError } = await query.order("created_at", { ascending: false });
+    const { data: itemsData, error: itemsError, count } = await query
+        .order("created_at", { ascending: false })
+        .range(offset, offset + limit - 1);
+
     if (itemsError) return Response.json({ error: itemsError.message }, { status: 500 });
 
     const { data: stockData, error: stockError } = await supabaseServer
@@ -33,7 +39,7 @@ export async function GET(request) {
         totalStock: stockMap[item.id] || 0,
     }));
 
-    return Response.json(items);
+    return Response.json({ items, total: count });
 }
 
 export async function POST(request) {

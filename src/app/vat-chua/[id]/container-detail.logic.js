@@ -25,11 +25,13 @@ export function useContainerDetailLogic() {
             const [containerRes, itemsRes, allItemsRes] = await Promise.all([
                 fetch(`/api/containers/${id}`),
                 fetch(`/api/containers/${id}/items`),
-                fetch(`/api/items`),
+                fetch(`/api/items?limit=2000`),
             ]);
             setContainer(await containerRes.json());
             setItems(await itemsRes.json());
-            setAllItems(await allItemsRes.json());
+
+            const allItemsData = await allItemsRes.json();
+            setAllItems(Array.isArray(allItemsData.items) ? allItemsData.items : []);
         } catch (err) {
             setError("Không tải được thông tin bao.");
         } finally {
@@ -117,10 +119,9 @@ export function useContainerDetailLogic() {
             setSavingLocation(false);
         }
     }
-    
-    return { container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer, role,
-        isEditingLocation, locationForm, setLocationForm, startEditLocation, cancelEditLocation, saveLocation, savingLocation };
 
-};
-
-
+    return {
+        container, items, allItems, loading, error, addItemToContainer, removeItemFromContainer, deleteContainer, role,
+        isEditingLocation, locationForm, setLocationForm, startEditLocation, cancelEditLocation, saveLocation, savingLocation,
+    };
+}

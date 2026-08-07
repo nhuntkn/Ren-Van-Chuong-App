@@ -24,7 +24,7 @@ export function useContainerListLogic() {
 
     useEffect(() => {
         fetchContainers();
-        fetch("/api/items").then((r) => r.json()).then((d) => setAllItems(Array.isArray(d) ? d : [])).catch(() => setAllItems([]));
+        fetch("/api/items").then((r) => r.json()).then((d) => setAllItems(Array.isArray(d.items) ? d.items : []))
         fetch("/api/me").then((r) => r.json()).then((d) => setRole(d.role)).catch(() => setRole(null));
     }, [fetchContainers]);
 

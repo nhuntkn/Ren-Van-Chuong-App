@@ -88,6 +88,16 @@ export function useAddItemLogic() {
 
         setSubmitting(true);
         try {
+            // 1. Upload ảnh lên Supabase Storage trước, lấy URL thật
+            const uploadRes = await fetch("/api/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ dataUrl: previewUrl }),
+            });
+            const uploadData = await uploadRes.json();
+            if (!uploadRes.ok) throw new Error(uploadData.error || "Tải ảnh lên thất bại.");
+
+            // 2. Tạo mẫu hàng, dùng URL ảnh thật thay vì base64
             const itemRes = await fetch("/api/items", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -95,9 +105,10 @@ export function useAddItemLogic() {
                     itemCode: form.itemCode.trim(),
                     category: form.category,
                     color: form.color.trim(),
+                    fabricWidth: form.fabricWidth.trim(),
                     unit: form.unit,
                     note: form.note.trim(),
-                    imageUrl: previewUrl,
+                    imageUrl: uploadData.url,
                     hash: feature.hash,
                     avgColor: feature.avgColor,
                 }),
