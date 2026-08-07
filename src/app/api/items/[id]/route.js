@@ -32,6 +32,7 @@ export async function GET(request, { params }) {
         isPublished: data.is_published,
         price: data.price,
         fabricWidth: data.fabric_width,
+        conversionInfo: data.conversion_info,
         costPrice: data.cost_price,
         wholesalePrice: data.wholesale_price,
         supplier: data.supplier,
@@ -58,6 +59,7 @@ export async function PATCH(request, { params }) {
     if (body.costPrice !== undefined) updateData.cost_price = body.costPrice;
     if (body.wholesalePrice !== undefined) updateData.wholesale_price = body.wholesalePrice;
     if (body.supplier !== undefined) updateData.supplier = body.supplier;
+    if (body.conversionInfo !== undefined) updateData.conversion_info = body.conversionInfo;
 
     const { error } = await supabaseServer
         .from("items")

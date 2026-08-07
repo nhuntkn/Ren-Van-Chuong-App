@@ -23,7 +23,7 @@ export function useItemDetailLogic() {
     const [changingPhoto, setChangingPhoto] = useState(false);
 
     const [priceForm, setPriceForm] = useState({
-        fabricWidth: "", supplier: "", costPrice: "", wholesalePrice: "", price: "",
+        fabricWidth: "", conversionInfo: "", supplier: "", costPrice: "", wholesalePrice: "", price: "",
     });
     const [savingPrice, setSavingPrice] = useState(false);
 
@@ -66,6 +66,7 @@ export function useItemDetailLogic() {
             setNoteInput(itemData.note || "");
             setPriceForm({
                 fabricWidth: itemData.fabricWidth || "",
+                conversionInfo: itemData.conversionInfo || "",
                 supplier: itemData.supplier || "",
                 costPrice: itemData.costPrice || "",
                 wholesalePrice: itemData.wholesalePrice || "",
@@ -127,6 +128,7 @@ export function useItemDetailLogic() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     fabricWidth: priceForm.fabricWidth,
+                    conversionInfo: priceForm.conversionInfo,
                     supplier: priceForm.supplier,
                     costPrice: priceForm.costPrice ? Number(priceForm.costPrice) : null,
                     wholesalePrice: priceForm.wholesalePrice ? Number(priceForm.wholesalePrice) : null,

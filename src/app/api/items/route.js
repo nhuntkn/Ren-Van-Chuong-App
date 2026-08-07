@@ -71,6 +71,8 @@ export async function POST(request) {
             category,
             color: color?.trim() || null,
             fabric_width: fabricWidth?.trim() || null,
+            conversion_info: conversionInfo?.trim() || null,
+            wholesale_price: wholesalePrice || null,
             unit: unit || "kg",
             note: note || null,
             image_url: imageUrl || null,
