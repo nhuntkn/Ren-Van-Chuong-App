@@ -30,6 +30,8 @@ export function useItemDetailLogic() {
     const [colorOptions, setColorOptions] = useState([]);
     const [widthOptions, setWidthOptions] = useState([]);
 
+    const [movements, setMovements] = useState([]);
+
     useEffect(() => {
         fetch("/api/items?limit=2000")
             .then((r) => r.json())
@@ -51,6 +53,10 @@ export function useItemDetailLogic() {
                 setColorOptions([]);
                 setWidthOptions([]);
             });
+        fetch(`/api/stock-movements?itemId=${id}&limit=20`)
+            .then((r) => r.json())
+            .then((d) => setMovements(Array.isArray(d) ? d : []))
+            .catch(() => setMovements([]));
     }, []);
 
     const load = useCallback(async () => {
@@ -221,5 +227,6 @@ export function useItemDetailLogic() {
         allItems, showCreateContainer, setShowCreateContainer,
         changingPhoto, changePhoto,
         colorOptions, widthOptions,
+        movements,
     };
 }

@@ -14,6 +14,7 @@ export default function ItemDetailPage() {
         allItems, showCreateContainer, setShowCreateContainer,
         changePhoto, changingPhoto,
         colorOptions, widthOptions,
+        movements,
     } = useItemDetailLogic();
 
     if (loading) return <main className="px-4 py-5 text-ink-soft text-sm">Đang tải...</main>;
@@ -125,6 +126,24 @@ export default function ItemDetailPage() {
             )}
 
             <ContainerBreakdownList containers={containers} />
+
+            {movements.length > 0 && (
+                <div className="mt-4">
+                    <p className="text-[12px] text-ink-soft mb-2">Lịch sử nhập/xuất gần đây</p>
+                    <div className="flex flex-col gap-1.5">
+                        {movements.map((m) => (
+                            <div key={m.id} className="flex justify-between text-[12.5px] border-b border-border pb-1.5">
+                                <span className={m.type === "in" ? "text-sage" : "text-red-500"}>
+                                    {m.type === "in" ? "+ Nhập" : "− Xuất"} {m.qty}
+                                </span>
+                                <span className="text-ink-faint">
+                                    {new Date(m.createdAt).toLocaleDateString("vi-VN")}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {role === "admin" && (
                 <div className="bg-surface-alt rounded-lg p-3 mt-5">
