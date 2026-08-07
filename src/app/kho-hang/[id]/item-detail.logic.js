@@ -11,7 +11,6 @@ export function useItemDetailLogic() {
     const [containers, setContainers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [priceInput, setPriceInput] = useState("");
     const [publishLoading, setPublishLoading] = useState(false);
 
     const [isEditingNote, setIsEditingNote] = useState(false);
@@ -23,15 +22,35 @@ export function useItemDetailLogic() {
     const [showCreateContainer, setShowCreateContainer] = useState(false);
     const [changingPhoto, setChangingPhoto] = useState(false);
 
-    useEffect(() => {
-        fetch("/api/items").then((r) => r.json()).then((d) => setAllItems(Array.isArray(d.items) ? d.items : []))
-    }, []);
+    const [priceForm, setPriceForm] = useState({
+        fabricWidth: "", supplier: "", costPrice: "", wholesalePrice: "", price: "",
+    });
+    const [savingPrice, setSavingPrice] = useState(false);
+
+    const [colorOptions, setColorOptions] = useState([]);
+    const [widthOptions, setWidthOptions] = useState([]);
 
     useEffect(() => {
+        fetch("/api/items?limit=2000")
+            .then((r) => r.json())
+            .then((d) => setAllItems(Array.isArray(d.items) ? d.items : []))
+            .catch(() => setAllItems([]));
+
         fetch("/api/me")
             .then((r) => r.json())
             .then((data) => setRole(data.role))
             .catch(() => setRole(null));
+
+        fetch("/api/meta/color-width-options")
+            .then((r) => r.json())
+            .then((d) => {
+                setColorOptions(d.colors || []);
+                setWidthOptions(d.widths || []);
+            })
+            .catch(() => {
+                setColorOptions([]);
+                setWidthOptions([]);
+            });
     }, []);
 
     const load = useCallback(async () => {
@@ -44,8 +63,14 @@ export function useItemDetailLogic() {
             const itemData = await itemRes.json();
             if (!itemRes.ok) throw new Error(itemData.error || "Không tìm thấy mẫu.");
             setItem(itemData);
-            setPriceInput(itemData.price || "");
             setNoteInput(itemData.note || "");
+            setPriceForm({
+                fabricWidth: itemData.fabricWidth || "",
+                supplier: itemData.supplier || "",
+                costPrice: itemData.costPrice || "",
+                wholesalePrice: itemData.wholesalePrice || "",
+                price: itemData.price || "",
+            });
 
             const containersData = await containersRes.json();
             setContainers(Array.isArray(containersData) ? containersData : []);
@@ -93,10 +118,35 @@ export function useItemDetailLogic() {
         }
     }
 
+    async function savePriceInfo() {
+        setSavingPrice(true);
+        setError("");
+        try {
+            const res = await fetch(`/api/items/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fabricWidth: priceForm.fabricWidth,
+                    supplier: priceForm.supplier,
+                    costPrice: priceForm.costPrice ? Number(priceForm.costPrice) : null,
+                    wholesalePrice: priceForm.wholesalePrice ? Number(priceForm.wholesalePrice) : null,
+                    price: priceForm.price ? Number(priceForm.price) : null,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Lưu thất bại.");
+            await load();
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setSavingPrice(false);
+        }
+    }
+
     async function togglePublish() {
         const nextState = !item.isPublished;
-        if (nextState && (!priceInput || Number(priceInput) <= 0)) {
-            setError("Vui lòng nhập giá bán hợp lệ trước khi đăng bán.");
+        if (nextState && (!item.price || item.price <= 0)) {
+            setError("Vui lòng nhập Giá lẻ ở khối phía trên trước khi đăng bán.");
             return;
         }
         setPublishLoading(true);
@@ -105,7 +155,7 @@ export function useItemDetailLogic() {
             const res = await fetch(`/api/items/${id}/publish`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ isPublished: nextState, price: Number(priceInput) }),
+                body: JSON.stringify({ isPublished: nextState, price: item.price }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Cập nhật thất bại.");
@@ -161,11 +211,13 @@ export function useItemDetailLogic() {
 
     return {
         item, containers, loading, error, load,
-        priceInput, setPriceInput, togglePublish, publishLoading,
+        priceForm, setPriceForm, savePriceInfo, savingPrice,
+        togglePublish, publishLoading,
         deleteItem,
         isEditingNote, noteInput, setNoteInput, startEditNote, cancelEditNote, saveNote, savingNote,
         role,
         allItems, showCreateContainer, setShowCreateContainer,
         changingPhoto, changePhoto,
+        colorOptions, widthOptions,
     };
 }
