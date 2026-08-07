@@ -1,5 +1,5 @@
-import { supabaseServer } from "@/lib/supabaseServerClient";
 import { cookies } from "next/headers";
+import { supabaseServer } from "@/lib/supabaseServerClient";
 
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
@@ -32,10 +32,15 @@ export async function GET(request) {
         name: item.name,
         category: item.category,
         color: item.color,
+        fabricWidth: item.fabric_width,
         unit: item.unit,
         note: item.note,
         imageUrl: item.image_url,
         isPublished: item.is_published,
+        price: item.price,
+        costPrice: item.cost_price,
+        wholesalePrice: item.wholesale_price,
+        supplier: item.supplier,
         totalStock: stockMap[item.id] || 0,
     }));
 
@@ -50,10 +55,14 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { itemCode, category, color, unit, note, imageUrl, hash, avgColor } = body;
+    const { itemCode, category, color, fabricWidth, unit, note, imageUrl, hash, avgColor } = body;
 
-    if (!itemCode?.trim()) return Response.json({ error: "Thiếu mã mẫu." }, { status: 400 });
-    if (!category?.trim()) return Response.json({ error: "Thiếu loại mẫu hàng." }, { status: 400 });
+    if (!itemCode?.trim()) {
+        return Response.json({ error: "Thiếu mã mẫu." }, { status: 400 });
+    }
+    if (!category?.trim()) {
+        return Response.json({ error: "Thiếu loại mẫu hàng." }, { status: 400 });
+    }
 
     const { data, error } = await supabaseServer
         .from("items")
@@ -61,6 +70,7 @@ export async function POST(request) {
             item_code: itemCode.trim(),
             category,
             color: color?.trim() || null,
+            fabric_width: fabricWidth?.trim() || null,
             unit: unit || "kg",
             note: note || null,
             image_url: imageUrl || null,
@@ -72,7 +82,9 @@ export async function POST(request) {
         .single();
 
     if (error) {
-        if (error.code === "23505") return Response.json({ error: "Mã mẫu đã tồn tại." }, { status: 409 });
+        if (error.code === "23505") {
+            return Response.json({ error: "Mã mẫu đã tồn tại." }, { status: 409 });
+        }
         return Response.json({ error: error.message }, { status: 500 });
     }
 

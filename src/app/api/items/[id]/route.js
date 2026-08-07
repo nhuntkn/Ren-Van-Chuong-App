@@ -31,6 +31,10 @@ export async function GET(request, { params }) {
         imageUrl: data.image_url,
         isPublished: data.is_published,
         price: data.price,
+        fabricWidth: data.fabric_width,
+        costPrice: data.cost_price,
+        wholesalePrice: data.wholesale_price,
+        supplier: data.supplier,
         totalStock: stockRow?.total_stock || 0,
     });
 }
@@ -50,6 +54,10 @@ export async function PATCH(request, { params }) {
     if (body.imageUrl !== undefined) updateData.image_url = body.imageUrl;
     if (body.hash !== undefined) updateData.hash = body.hash;
     if (body.avgColor !== undefined) updateData.avg_color = body.avgColor;
+    if (body.fabricWidth !== undefined) updateData.fabric_width = body.fabricWidth;
+    if (body.costPrice !== undefined) updateData.cost_price = body.costPrice;
+    if (body.wholesalePrice !== undefined) updateData.wholesale_price = body.wholesalePrice;
+    if (body.supplier !== undefined) updateData.supplier = body.supplier;
 
     const { error } = await supabaseServer
         .from("items")
