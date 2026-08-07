@@ -1,6 +1,7 @@
 import { supabaseServer } from "@/lib/supabaseServerClient";
 import { cookies } from "next/headers";
 import { logStockMovement } from "@/lib/logStockMovement";
+import { triggerSheetSync } from "@/lib/syncHelper";
 
 export async function GET(request, { params }) {
     const { id } = await params;
@@ -34,7 +35,7 @@ export async function GET(request, { params }) {
             qty: link.qty,
         };
     });
-
+    
     return Response.json(result);
 }
 
@@ -76,6 +77,7 @@ export async function POST(request, { params }) {
         qty: Number(qty),
     });
 
+    triggerSheetSync();
     return Response.json({ success: true });
 }
 
@@ -123,5 +125,6 @@ export async function PATCH(request, { params }) {
         qty: Number(qtyToRemove),
     });
 
+    triggerSheetSync();
     return Response.json({ success: true, remaining: Math.max(0, remaining) });
 }

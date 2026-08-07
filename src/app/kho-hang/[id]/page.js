@@ -111,7 +111,13 @@ export default function ItemDetailPage() {
             <div className="flex justify-between items-center mb-2">
                 <h2 className="text-[13px] font-semibold text-ink-soft">Nằm trong {containers.length} bao</h2>
                 {role === "admin" && (
-                    <button onClick={() => setShowCreateContainer((v) => !v)} className="text-[11px] text-accent-dark font-medium">
+                    <button 
+                        onClick={() => {
+                            setShowCreateContainer((v) => !v);
+                            loadAllItemsIfNeeded();
+                        }} 
+                        className="text-[11px] text-accent-dark font-medium"
+                    >
                         + Tạo bao mới
                     </button>
                 )}

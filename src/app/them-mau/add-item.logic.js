@@ -21,6 +21,7 @@ export function useAddItemLogic() {
         color: "",
         fabricWidth: "",
         conversionInfo: "",
+        wholesalePrice: "",
         unit: UNITS[0],
         note: "",
         zone: "",

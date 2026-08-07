@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { ROLE_COOKIE } from "@/lib/roleCookie";
 import { supabaseServer } from "@/lib/supabaseServerClient";
+import { triggerSheetSync } from "@/lib/syncHelper";
 
 export async function GET(request, { params }) {
     const { id } = await params;
@@ -67,6 +68,8 @@ export async function PATCH(request, { params }) {
         .eq("id", id);
 
     if (error) return Response.json({ error: error.message }, { status: 500 });
+    
+    triggerSheetSync();
     return Response.json({ success: true });
 }
 
@@ -81,5 +84,7 @@ export async function DELETE(request, { params }) {
 
     const { error } = await supabaseServer.from("items").delete().eq("id", id);
     if (error) return Response.json({ error: error.message }, { status: 500 });
+    
+    triggerSheetSync();
     return Response.json({ success: true });
 }

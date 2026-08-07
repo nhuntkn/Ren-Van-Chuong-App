@@ -10,6 +10,8 @@ export function useWarehouseLogic() {
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [role, setRole] = useState(null);
+    const [syncing, setSyncing] = useState(false);
+    const [syncMessage, setSyncMessage] = useState("");
 
     const fetchItems = useCallback(async (offset = 0, append = false) => {
         if (append) setLoadingMore(true);
@@ -47,7 +49,23 @@ export function useWarehouseLogic() {
         fetchItems(items.length, true);
     }
 
+    async function handleSyncNow() {
+        setSyncing(true);
+        setSyncMessage("");
+        try {
+            const res = await fetch("/api/sync-now", { method: "POST" });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Đồng bộ thất bại.");
+            setSyncMessage("Đã đồng bộ xong.");
+        } catch (err) {
+            setSyncMessage(err.message);
+        } finally {
+            setSyncing(false);
+            setTimeout(() => setSyncMessage(""), 3000);
+        }
+    }
+
     const hasMore = items.length < total;
 
-    return { items, total, search, setSearch, loading, loadingMore, loadMore, hasMore, role };
+    return { items, total, search, setSearch, loading, loadingMore, loadMore, hasMore, role, syncing, syncMessage, handleSyncNow };
 }

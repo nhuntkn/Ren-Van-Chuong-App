@@ -6,6 +6,7 @@ import { clearRoleCookie } from "@/lib/roleCookie";
 
 const ALL_NAV_ITEMS = [
     { href: "/kho-hang", label: "Kho hàng", icon: "list", adminOnly: false },
+    { href: "/khach-hang", label: "Khách hàng", icon: "user", adminOnly: false },
     { href: "/quet-anh", label: "Quét", icon: "scan", adminOnly: false },
     { href: "/vat-chua", label: "Vật chứa", icon: "box", adminOnly: false },
     { href: "/them-mau", label: "Thêm mẫu", icon: "plus", adminOnly: true },
@@ -36,6 +37,12 @@ const ICONS = {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-[20px] h-[20px]">
             <circle cx="12" cy="12" r="9" />
             <path d="M12 8v8M8 12h8" />
+        </svg>
+    ),
+    user: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-[20px] h-[20px]">
+            <circle cx="12" cy="8" r="3.5" />
+            <path d="M4 20c0-3.5 3.5-6 8-6s8 2.5 8 6" />
         </svg>
     ),
 };
