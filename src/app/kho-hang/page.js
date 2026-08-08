@@ -3,7 +3,10 @@ import { useWarehouseLogic } from "./warehouse.logic";
 import ItemCard from "@/components/itemCard";
 
 export default function WarehousePage() {
-    const { items, total, search, setSearch, loading, loadingMore, loadMore, hasMore, role } = useWarehouseLogic();
+    const {
+        items, total, search, setSearch, loading, loadingMore, loadMore, hasMore, role,
+        syncing, syncMessage, handleSyncNow,
+    } = useWarehouseLogic();
 
     return (
         <main className="px-4 py-5">
@@ -13,9 +16,16 @@ export default function WarehousePage() {
             </div>
 
             {role === "admin" && (
-                <a href="/api/export/items" className="inline-block text-[12px] px-3 py-1.5 border border-border rounded-full mb-3">
-                    ⬇ Xuất Excel
-                </a>
+                <div className="mb-3">
+                    <button
+                        onClick={handleSyncNow}
+                        disabled={syncing}
+                        className="text-[12px] px-3 py-1.5 border border-border rounded-full disabled:opacity-60"
+                    >
+                        {syncing ? "Đang đồng bộ..." : "🔄 Đồng bộ Google Sheets"}
+                    </button>
+                    {syncMessage && <span className="text-[11px] text-sage ml-2">{syncMessage}</span>}
+                </div>
             )}
 
             <input

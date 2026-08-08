@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServerClient";
+import { triggerSheetSync } from "@/lib/syncHelper";
 
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
@@ -33,6 +34,7 @@ export async function GET(request) {
         category: item.category,
         color: item.color,
         fabricWidth: item.fabric_width,
+        conversionInfo: item.conversion_info,
         unit: item.unit,
         note: item.note,
         imageUrl: item.image_url,
@@ -55,7 +57,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { itemCode, category, color, fabricWidth, unit, note, imageUrl, hash, avgColor } = body;
+    const { itemCode, category, color, fabricWidth, conversionInfo, wholesalePrice, unit, note, imageUrl, hash, avgColor } = body;
 
     if (!itemCode?.trim()) {
         return Response.json({ error: "Thiếu mã mẫu." }, { status: 400 });
@@ -89,6 +91,8 @@ export async function POST(request) {
         }
         return Response.json({ error: error.message }, { status: 500 });
     }
+
+    triggerSheetSync();
 
     return Response.json({ id: data.id });
 }

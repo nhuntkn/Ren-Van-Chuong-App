@@ -30,12 +30,11 @@ export function useItemDetailLogic() {
     const [colorOptions, setColorOptions] = useState([]);
     const [widthOptions, setWidthOptions] = useState([]);
 
-    useEffect(() => {
-        fetch("/api/items?limit=2000")
-            .then((r) => r.json())
-            .then((d) => setAllItems(Array.isArray(d.items) ? d.items : []))
-            .catch(() => setAllItems([]));
+    const [movements, setMovements] = useState([]);
 
+    // Chỉ tải role, gợi ý màu/khổ, lịch sử — bỏ allItems ra khỏi đây vì
+    // chỉ cần khi người dùng bấm "+ Tạo bao mới", không cần tải mỗi lần vào trang.
+    useEffect(() => {
         fetch("/api/me")
             .then((r) => r.json())
             .then((data) => setRole(data.role))
@@ -51,7 +50,23 @@ export function useItemDetailLogic() {
                 setColorOptions([]);
                 setWidthOptions([]);
             });
-    }, []);
+
+        fetch(`/api/stock-movements?itemId=${id}&limit=20`)
+            .then((r) => r.json())
+            .then((d) => setMovements(Array.isArray(d) ? d : []))
+            .catch(() => setMovements([]));
+    }, [id]);
+
+    async function loadAllItemsIfNeeded() {
+        if (allItems.length > 0) return;
+        try {
+            const res = await fetch("/api/items?limit=2000");
+            const data = await res.json();
+            setAllItems(Array.isArray(data.items) ? data.items : []);
+        } catch (err) {
+            setAllItems([]);
+        }
+    }
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -218,8 +233,9 @@ export function useItemDetailLogic() {
         deleteItem,
         isEditingNote, noteInput, setNoteInput, startEditNote, cancelEditNote, saveNote, savingNote,
         role,
-        allItems, showCreateContainer, setShowCreateContainer,
+        allItems, loadAllItemsIfNeeded, showCreateContainer, setShowCreateContainer,
         changingPhoto, changePhoto,
         colorOptions, widthOptions,
+        movements,
     };
 }

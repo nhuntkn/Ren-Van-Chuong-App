@@ -1,5 +1,7 @@
 import { supabaseServer } from "@/lib/supabaseServerClient";
 import { cookies } from "next/headers";
+import { logStockMovement } from "@/lib/logStockMovement";
+import { triggerSheetSync } from "@/lib/syncHelper";
 
 export async function GET(request, { params }) {
     const { id } = await params;
@@ -33,7 +35,7 @@ export async function GET(request, { params }) {
             qty: link.qty,
         };
     });
-
+    
     return Response.json(result);
 }
 
@@ -66,6 +68,16 @@ export async function POST(request, { params }) {
         if (error) return Response.json({ error: error.message }, { status: 500 });
     }
 
+    const { data: itemInfo } = await supabaseServer.from("items").select("item_code").eq("id", itemId).maybeSingle();
+    await logStockMovement({
+        itemId,
+        itemCode: itemInfo?.item_code || "",
+        containerId,
+        movementType: "in",
+        qty: Number(qty),
+    });
+
+    triggerSheetSync();
     return Response.json({ success: true });
 }
 
@@ -104,5 +116,15 @@ export async function PATCH(request, { params }) {
         if (error) return Response.json({ error: error.message }, { status: 500 });
     }
 
+    const { data: itemInfo } = await supabaseServer.from("items").select("item_code").eq("id", itemId).maybeSingle();
+    await logStockMovement({
+        itemId,
+        itemCode: itemInfo?.item_code || "",
+        containerId,
+        movementType: "out",
+        qty: Number(qtyToRemove),
+    });
+
+    triggerSheetSync();
     return Response.json({ success: true, remaining: Math.max(0, remaining) });
 }
